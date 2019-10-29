@@ -69,7 +69,7 @@ fn get_aws_region() -> Option<(String, String)> {
 }
 
 pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
-    const AWS_PREFIX: &str = "on ";
+    const AWS_PREFIX: &str = "";
 
     let (aws_profile, aws_region) = get_aws_region()?;
     if aws_profile.is_empty() && aws_region.is_empty() {

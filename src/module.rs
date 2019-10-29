@@ -288,7 +288,7 @@ impl Affix {
         Self {
             _name: format!("{}_prefix", name),
             style: Style::default(),
-            value: "via ".to_string(),
+            value: "".to_string(),
         }
     }
 

@@ -27,15 +27,12 @@ impl<'a> RootModuleConfig<'a> for StarshipRootConfig<'a> {
                 "package",
                 // ↓ Toolchain version modules ↓
                 // (Let's keep these sorted alphabetically)
-                "dotnet",
                 "golang",
-                "java",
-                "nodejs",
                 "python",
                 "ruby",
                 "rust",
+                "elixir",
                 // ↑ Toolchain version modules ↑
-                "nix_shell",
                 "conda",
                 "memory_usage",
                 "aws",

@@ -5,6 +5,7 @@ mod cmd_duration;
 mod conda;
 mod directory;
 mod dotnet;
+mod elixir;
 mod env_var;
 mod git_branch;
 mod git_state;
@@ -45,6 +46,7 @@ pub fn handle<'a>(module: &str, context: &'a Context) -> Option<Module<'a>> {
         "conda" => conda::module(context),
         "directory" => directory::module(context),
         "dotnet" => dotnet::module(context),
+        "elixir" => elixir::module(context),
         "env_var" => env_var::module(context),
         "git_branch" => git_branch::module(context),
         "git_state" => git_state::module(context),

@@ -10,8 +10,6 @@ use crate::configs::git_status::{CountConfig, GitStatusConfig};
 /// Will display the branch name if the current directory is a git repo
 /// By default, the following symbols will be used to represent the repo's status:
 ///   - `=` – This branch has merge conflicts
-///   - `⇡` – This branch is ahead of the branch being tracked
-///   - `⇣` – This branch is behind of the branch being tracked
 ///   - `⇕` – This branch has diverged from the branch being tracked
 ///   - `?` — There are untracked files in the working directory
 ///   - `$` — A stash exists for the local repository
@@ -64,52 +62,6 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
             &config.conflicted,
             config.conflicted_count,
         );
-    }
-
-    // Add the ahead/behind segment
-    if let Ok((ahead, behind)) = ahead_behind {
-        let add_ahead = |m: &mut Module<'a>| {
-            create_segment_with_count(
-                m,
-                "ahead",
-                ahead,
-                &config.ahead,
-                CountConfig {
-                    enabled: config.show_sync_count,
-                    style: None,
-                },
-            );
-        };
-
-        let add_behind = |m: &mut Module<'a>| {
-            create_segment_with_count(
-                m,
-                "behind",
-                behind,
-                &config.behind,
-                CountConfig {
-                    enabled: config.show_sync_count,
-                    style: None,
-                },
-            );
-        };
-
-        if ahead > 0 && behind > 0 {
-            module.create_segment("diverged", &config.diverged);
-
-            if config.show_sync_count {
-                add_ahead(&mut module);
-                add_behind(&mut module);
-            }
-        }
-
-        if ahead > 0 && behind == 0 {
-            add_ahead(&mut module);
-        }
-
-        if behind > 0 && ahead == 0 {
-            add_behind(&mut module);
-        }
     }
 
     // Add the stashed segment

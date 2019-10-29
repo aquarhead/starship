@@ -12,8 +12,6 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     let config = GitBranchConfig::try_load(module.config);
     module.set_style(config.style);
 
-    module.get_prefix().set_value("on ");
-
     let truncation_symbol = get_graphemes(config.truncation_symbol, 1);
     module.create_segment("symbol", &config.symbol);
 

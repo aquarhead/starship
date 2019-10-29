@@ -10,6 +10,7 @@ mod env_var;
 mod git_branch;
 mod git_state;
 mod git_status;
+mod git_track;
 mod golang;
 mod hostname;
 mod java;
@@ -51,6 +52,7 @@ pub fn handle<'a>(module: &str, context: &'a Context) -> Option<Module<'a>> {
         "git_branch" => git_branch::module(context),
         "git_state" => git_state::module(context),
         "git_status" => git_status::module(context),
+        "git_track" => git_track::module(context),
         "golang" => golang::module(context),
         "hostname" => hostname::module(context),
         "java" => java::module(context),

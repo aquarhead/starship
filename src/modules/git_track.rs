@@ -19,7 +19,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     let repo_root = repo.root.as_ref()?;
     let repository = Repository::open(repo_root).ok()?;
 
-    let module_style = Color::Yellow.bold();
+    let module_style = Color::Red.bold();
     let mut module = context.new_module("git_track");
     module.set_style(module_style);
 
@@ -36,10 +36,10 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
         let behind_segment = format!("{}{}", GIT_STATUS_BEHIND, behind);
 
         if ahead > 0 {
-            module.new_segment("ahead", ahead_segment.as_str());
+            module.append_segment_str("ahead", &ahead_segment);
         }
         if behind > 0 {
-            module.new_segment("behind", behind_segment.as_str());
+            module.append_segment_str("behind", &behind_segment);
         }
     }
 

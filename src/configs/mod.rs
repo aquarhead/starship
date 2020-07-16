@@ -1,24 +1,12 @@
 pub mod aws;
-pub mod battery;
 pub mod character;
 pub mod cmd_duration;
-pub mod conda;
 pub mod directory;
-pub mod dotnet;
-pub mod env_var;
 pub mod git_branch;
 pub mod git_status;
 pub mod go;
-pub mod hostname;
 pub mod jobs;
-pub mod kubernetes;
-pub mod memory_usage;
-pub mod nodejs;
-pub mod package;
-pub mod ruby;
 pub mod rust;
-mod starship_root;
-pub mod time;
-pub mod username;
 
+mod starship_root;
 pub use starship_root::*;

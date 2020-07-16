@@ -20,10 +20,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
         return None;
     }
 
-    let module_style = module
-        .config_value_style("style")
-        .unwrap_or_else(|| Color::Yellow.bold());
-    module.set_style(module_style);
+    module.set_style(Color::Blue.bold());
     module.get_prefix().set_value("(");
     module.get_suffix().set_value(") ");
 
@@ -34,12 +31,12 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
         _ => panic!("Expected to have a label at this point in the control flow."),
     };
 
-    module.new_segment(label.segment_name, label.message_default);
+    module.append_segment_str(label.segment_name, label.message_default);
 
     if let StateDescription::LabelAndProgress(_, progress) = state_description {
-        module.new_segment("progress_current", &format!(" {}", progress.current));
-        module.new_segment("progress_divider", "/");
-        module.new_segment("progress_total", &format!("{}", progress.total));
+        module.append_segment_str("progress_current", &format!(" {}", progress.current));
+        module.append_segment_str("progress_divider", "/");
+        module.append_segment_str("progress_total", &format!("{}", progress.total));
     }
 
     Some(module)

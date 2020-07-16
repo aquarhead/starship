@@ -17,32 +17,22 @@ impl<'a> RootModuleConfig<'a> for StarshipRootConfig<'a> {
             // NOTE: If this const value is changed then Default prompt order subheading inside
             // prompt heading of config docs needs to be updated according to changes made here.
             prompt_order: vec![
-                "username",
-                "hostname",
-                "kubernetes",
                 "directory",
                 "git_branch",
                 "git_state",
                 "git_status",
                 "git_track",
-                "package",
                 // ↓ Toolchain version modules ↓
                 // (Let's keep these sorted alphabetically)
                 "golang",
                 "python",
-                "ruby",
                 "rust",
                 "elixir",
                 // ↑ Toolchain version modules ↑
-                "conda",
-                "memory_usage",
                 "aws",
-                "env_var",
                 "cmd_duration",
                 "line_break",
                 "jobs",
-                #[cfg(feature = "battery")]
-                "battery",
                 "time",
                 "character",
             ],

@@ -23,8 +23,8 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
             module.set_style(module_color);
 
             let ev = extract_version(raw_version);
-            module.new_segment("symbol", ELIXIR_CHAR);
-            module.new_segment("version", &ev);
+            module.append_segment_str("symbol", ELIXIR_CHAR);
+            module.append_segment_str("version", &ev);
 
             Some(module)
         }

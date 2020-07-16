@@ -3,7 +3,7 @@ use std::env;
 
 use super::{Context, Module};
 
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let aws_profile = env::var("AWS_PROFILE").unwrap_or_default();
 
     let aws_region =

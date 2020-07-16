@@ -11,7 +11,7 @@ use super::{Context, Module};
 /// Will display the Rust version if any of the following criteria are met:
 ///     - Current directory contains a file with a `.rs` extension
 ///     - Current directory contains a `Cargo.toml` file
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let is_rs_project = context
         .try_begin_scan()?
         .set_files(&["Cargo.toml"])

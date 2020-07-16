@@ -14,7 +14,7 @@ use super::{Context, Module, SegmentConfig};
 ///
 /// **Truncation**
 /// Paths will be limited in length to `3` path components by default.
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     const HOME_SYMBOL: &str = "~";
 
     let mut module = context.new_module("directory");

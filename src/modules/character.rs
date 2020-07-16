@@ -10,7 +10,7 @@ use super::{Context, Module, SegmentConfig};
 /// (green by default)
 /// - If the exit-code was anything else, the arrow will be formatted with
 /// `style_failure` (red by default)
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module("character");
 
     let props = &context.properties;

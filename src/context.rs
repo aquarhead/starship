@@ -1,4 +1,3 @@
-use crate::config::StarshipConfig;
 use crate::module::Module;
 
 use clap::ArgMatches;
@@ -16,9 +15,6 @@ use std::time::{Duration, SystemTime};
 /// The data contained within Context will be relevant to this particular rendering
 /// of the prompt.
 pub struct Context<'a> {
-    /// The deserialized configuration map from the user's `starship.toml` file.
-    pub config: StarshipConfig,
-
     /// The current working directory that starship is being called in.
     pub current_dir: PathBuf,
 
@@ -55,8 +51,6 @@ impl<'a> Context<'a> {
     where
         T: Into<PathBuf>,
     {
-        let config = StarshipConfig::initialize();
-
         // Unwrap the clap arguments into a simple hashtable
         // we only care about single arguments at this point, there isn't a
         // use-case for a list of arguments yet.
@@ -71,7 +65,6 @@ impl<'a> Context<'a> {
         let current_dir = Context::expand_tilde(dir.into());
 
         Context {
-            config,
             properties,
             current_dir,
             dir_files: OnceCell::new(),
@@ -90,19 +83,7 @@ impl<'a> Context<'a> {
 
     /// Create a new module
     pub fn new_module(&self, name: &str) -> Module {
-        let config = self.config.get_module_config(name);
-
-        Module::new(name, config)
-    }
-
-    /// Check if `disabled` option of the module is true in configuration file.
-    pub fn is_module_disabled_in_config(&self, name: &str) -> bool {
-        let config = self.config.get_module_config(name);
-
-        // If the segment has "disabled" set to "true", don't show it
-        let disabled = config.and_then(|table| table.as_table()?.get("disabled")?.as_bool());
-
-        disabled == Some(true)
+        Module::new(name)
     }
 
     // returns a new ScanDir struct with reference to current dir_files of context
@@ -139,7 +120,7 @@ impl<'a> Context<'a> {
 
     pub fn get_dir_files(&self) -> Result<&Vec<PathBuf>, std::io::Error> {
         let start_time = SystemTime::now();
-        let scan_timeout = Duration::from_millis(self.config.get_root_config().scan_timeout);
+        let scan_timeout = Duration::from_millis(30);
 
         self.dir_files
             .get_or_try_init(|| -> Result<Vec<PathBuf>, std::io::Error> {

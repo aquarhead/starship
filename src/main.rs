@@ -2,7 +2,6 @@
 extern crate clap;
 
 mod config;
-mod configs;
 mod context;
 mod init;
 mod module;
@@ -11,7 +10,6 @@ mod print;
 mod segment;
 mod utils;
 
-use crate::module::ALL_MODULES;
 use clap::{App, AppSettings, Arg, SubCommand};
 
 fn main() {
@@ -87,27 +85,6 @@ fn main() {
                 .arg(&keymap_arg)
                 .arg(&jobs_arg),
         )
-        .subcommand(
-            SubCommand::with_name("module")
-                .about("Prints a specific prompt module")
-                .arg(
-                    Arg::with_name("name")
-                        .help("The name of the module to be printed")
-                        .required(true)
-                        .required_unless("list"),
-                )
-                .arg(
-                    Arg::with_name("list")
-                        .short("l")
-                        .long("list")
-                        .help("List out all supported modules"),
-                )
-                .arg(&status_code_arg)
-                .arg(&path_arg)
-                .arg(&cmd_duration_arg)
-                .arg(&keymap_arg)
-                .arg(&jobs_arg),
-        )
         .get_matches();
 
     match matches.subcommand() {
@@ -120,18 +97,6 @@ fn main() {
             }
         }
         ("prompt", Some(sub_m)) => print::prompt(sub_m.clone()),
-        ("module", Some(sub_m)) => {
-            if sub_m.is_present("list") {
-                println!("Supported modules list");
-                println!("----------------------");
-                for modules in ALL_MODULES {
-                    println!("{}", modules);
-                }
-            }
-            if let Some(module_name) = sub_m.value_of("name") {
-                print::module(module_name, sub_m.clone());
-            }
-        }
         _ => {}
     }
 }

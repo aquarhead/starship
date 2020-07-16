@@ -4,32 +4,9 @@ use ansi_term::Style;
 use ansi_term::{ANSIString, ANSIStrings};
 use std::fmt;
 
-// List of all modules
-// Keep these ordered alphabetically.
-// Default ordering is handled in configs/mod.rs
-pub const ALL_MODULES: &[&str] = &[
-    "aws",
-    "character",
-    "cmd_duration",
-    "directory",
-    "elixir",
-    "git_branch",
-    "git_state",
-    "git_status",
-    "git_track",
-    "golang",
-    "jobs",
-    "line_break",
-    "python",
-    "rust",
-];
-
 /// A module is a collection of segments showing data for a single integration
 /// (e.g. The git module shows the current git branch and status)
-pub struct Module<'a> {
-    /// The module's configuration map if available
-    pub config: Option<&'a toml::Value>,
-
+pub struct Module {
     /// The module's name, to be used in configuration and logging.
     _name: String,
 
@@ -46,11 +23,10 @@ pub struct Module<'a> {
     suffix: Affix,
 }
 
-impl<'a> Module<'a> {
+impl<'a> Module {
     /// Creates a module with no segments.
-    pub fn new(name: &str, config: Option<&'a toml::Value>) -> Module<'a> {
+    pub fn new(name: &str) -> Module {
         Module {
-            config,
             _name: name.to_string(),
             style: Style::default(),
             prefix: Affix::default_prefix(name),
@@ -99,7 +75,7 @@ impl<'a> Module<'a> {
     /// Sets the style of the segment.
     ///
     /// Accepts either `Color` or `Style`.
-    pub fn set_style<T>(&mut self, style: T) -> &mut Module<'a>
+    pub fn set_style<T>(&mut self, style: T) -> &mut Module
     where
         T: Into<Style>,
     {
@@ -134,7 +110,7 @@ impl<'a> Module<'a> {
     }
 }
 
-impl<'a> fmt::Display for Module<'a> {
+impl<'a> fmt::Display for Module {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let ansi_strings = self.ansi_strings();
         write!(f, "{}", ANSIStrings(&ansi_strings))
@@ -252,7 +228,6 @@ mod tests {
     fn test_module_is_empty_with_no_segments() {
         let name = "unit_test";
         let module = Module {
-            config: None,
             _name: name.to_string(),
             style: Style::default(),
             prefix: Affix::default_prefix(name),
@@ -267,7 +242,6 @@ mod tests {
     fn test_module_is_empty_with_all_empty_segments() {
         let name = "unit_test";
         let module = Module {
-            config: None,
             _name: name.to_string(),
             style: Style::default(),
             prefix: Affix::default_prefix(name),

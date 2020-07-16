@@ -9,7 +9,7 @@ use super::{Context, Module};
 /// By default, the following symbols will be used to represent the repo's status:
 ///   - `⇡` – This branch is ahead of the branch being tracked
 ///   - `⇣` – This branch is behind of the branch being tracked
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     // This is the order that the sections will appear in
     const GIT_STATUS_AHEAD: &str = "⇡";
     const GIT_STATUS_BEHIND: &str = "⇣";

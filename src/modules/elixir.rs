@@ -7,7 +7,7 @@ use super::{Context, Module};
 ///
 /// Will display the Elixir version if any of the following criteria are met:
 ///     - Current directory contains a file with a `.ex` or `.exs` extension
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let has_mix = context.try_begin_scan()?.set_files(&["mix.exs"]).is_match();
 
     if !has_mix {

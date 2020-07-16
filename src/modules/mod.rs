@@ -18,7 +18,7 @@ use crate::config::SegmentConfig;
 use crate::context::Context;
 use crate::module::Module;
 
-pub fn handle<'a>(module: &str, context: &'a Context) -> Option<Module<'a>> {
+pub fn handle<'a>(module: &str, context: &Context) -> Option<Module> {
     match module {
         // Keep these ordered alphabetically.
         // Default ordering is handled in configs/mod.rs

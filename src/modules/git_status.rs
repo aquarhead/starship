@@ -15,7 +15,7 @@ use super::{Context, Module};
 ///   - `+` — A new file has been added to the staging area
 ///   - `R` — A renamed file has been added to the staging area
 ///   - `D` — A file's deletion has been added to the staging area
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let repo = context.get_repo().ok()?;
     let branch_name = repo.branch.as_ref()?;
     let repo_root = repo.root.as_ref()?;
@@ -70,7 +70,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     Some(module)
 }
 
-fn create_segment_with_count<'a>(module: &mut Module<'a>, name: &str, count: usize, symbol: &str) {
+fn create_segment_with_count<'a>(module: &mut Module, name: &str, count: usize, symbol: &str) {
     if count > 0 {
         module.append_segment_str(name, symbol);
     }

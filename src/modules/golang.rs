@@ -13,7 +13,7 @@ use super::{Context, Module};
 ///     - Current directory contains a `Gopkg.lock` file
 ///     - Current directory contains a `Godeps` directory
 ///     - Current directory contains a file with the `.go` extension
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let is_go_project = context
         .try_begin_scan()?
         .set_files(&["go.mod", "go.sum", "glide.yaml", "Gopkg.yml", "Gopkg.lock"])

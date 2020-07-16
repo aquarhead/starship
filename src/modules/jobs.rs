@@ -3,7 +3,7 @@ use ansi_term::Color;
 use super::{Context, Module};
 
 /// Creates a segment to show if there are any active jobs running
-pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
+pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module("jobs");
 
     module.set_style(Color::Blue.bold());

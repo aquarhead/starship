@@ -5,7 +5,6 @@ use std::io::{self, Write};
 
 use crate::context::Context;
 use crate::module::Module;
-use crate::module::ALL_MODULES;
 use crate::modules;
 
 pub fn prompt(args: ArgMatches) {
@@ -15,33 +14,31 @@ pub fn prompt(args: ArgMatches) {
     write!(handle, "{}", get_prompt(context)).unwrap();
 }
 
+const MODULES: &'static [&'static str] = &[
+    "directory",
+    "git_branch",
+    "git_state",
+    "git_status",
+    "git_track",
+    "rust",
+    "elixir",
+    "golang",
+    "python",
+    "aws",
+    "cmd_duration",
+    "line_break",
+    "jobs",
+    "character",
+];
+
 pub fn get_prompt(context: Context) -> String {
-    let config = context.config.get_root_config();
     let mut buf = String::new();
 
     // Write a new line before the prompt
-    if config.add_newline {
-        writeln!(buf).unwrap();
-    }
+    writeln!(buf).unwrap();
 
-    let mut prompt_order: Vec<&str> = Vec::new();
-
-    // Write out a custom prompt order
-    for module in config.prompt_order {
-        if ALL_MODULES.contains(&module) {
-            prompt_order.push(module);
-        } else {
-            log::debug!(
-                "Expected prompt_order to contain value from {:?}. Instead received {}",
-                ALL_MODULES,
-                module,
-            );
-        }
-    }
-
-    let modules = &prompt_order
+    let modules = MODULES
         .par_iter()
-        .filter(|module| !context.is_module_disabled_in_config(module))
         .map(|module| modules::handle(module, &context)) // Compute modules
         .flatten()
         .collect::<Vec<Module>>(); // Remove segments set to `None`
@@ -62,15 +59,4 @@ pub fn get_prompt(context: Context) -> String {
     }
 
     buf
-}
-
-pub fn module(module_name: &str, args: ArgMatches) {
-    let context = Context::new(args);
-
-    // If the module returns `None`, print an empty string
-    let module = modules::handle(module_name, &context)
-        .map(|m| m.to_string())
-        .unwrap_or_default();
-
-    print!("{}", module);
 }

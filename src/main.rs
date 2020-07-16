@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate clap;
 
-mod config;
 mod context;
 mod init;
 mod module;

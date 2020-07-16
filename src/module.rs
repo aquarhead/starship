@@ -32,7 +32,6 @@ impl<'a> Module {
 
     pub fn append_segment_str(&mut self, value: &str) {
         let mut segment = Segment::new();
-        segment.set_style(self.style);
         segment.set_value(value);
         self.segments.push(segment);
     }
@@ -69,7 +68,7 @@ impl<'a> Module {
         let ansi_strings = self
             .segments
             .iter()
-            .map(Segment::ansi_string)
+            .map(|x| x.ansi_string(&self.style))
             .collect::<Vec<ANSIString>>();
 
         let mut ansi_strings = ansi_strings_modified(ansi_strings);

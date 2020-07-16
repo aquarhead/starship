@@ -177,36 +177,3 @@ impl fmt::Display for Affix {
         write!(f, "{}", self.ansi_string())
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_module_is_empty_with_no_segments() {
-        let name = "unit_test";
-        let module = Module {
-            _name: name.to_string(),
-            style: Style::default(),
-            prefix: Affix::default_prefix(),
-            segments: Vec::new(),
-            suffix: Affix::default_suffix(),
-        };
-
-        assert!(module.is_empty());
-    }
-
-    #[test]
-    fn test_module_is_empty_with_all_empty_segments() {
-        let name = "unit_test";
-        let module = Module {
-            _name: name.to_string(),
-            style: Style::default(),
-            prefix: Affix::default_prefix(),
-            segments: vec![Segment::new()],
-            suffix: Affix::default_suffix(),
-        };
-
-        assert!(module.is_empty());
-    }
-}

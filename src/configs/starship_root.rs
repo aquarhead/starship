@@ -33,7 +33,6 @@ impl<'a> RootModuleConfig<'a> for StarshipRootConfig<'a> {
                 "cmd_duration",
                 "line_break",
                 "jobs",
-                "time",
                 "character",
             ],
             scan_timeout: 30,

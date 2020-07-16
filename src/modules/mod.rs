@@ -14,7 +14,7 @@ mod line_break;
 mod python;
 mod rust;
 
-use crate::config::{RootModuleConfig, SegmentConfig};
+use crate::config::SegmentConfig;
 use crate::context::Context;
 use crate::module::Module;
 

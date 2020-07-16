@@ -1,10 +1,8 @@
+use ansi_term::Color;
 use path_slash::PathExt;
 use std::path::Path;
 
-use super::{Context, Module};
-
-use crate::config::{RootModuleConfig, SegmentConfig};
-use crate::configs::directory::DirectoryConfig;
+use super::{Context, Module, SegmentConfig};
 
 /// Creates a module with the current directory
 ///
@@ -20,28 +18,10 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     const HOME_SYMBOL: &str = "~";
 
     let mut module = context.new_module("directory");
-    let config: DirectoryConfig = DirectoryConfig::try_load(module.config);
 
-    module.set_style(config.style);
+    module.set_style(Color::Cyan.bold());
 
-    // Using environment PWD is the standard approach for determining logical path
-    // If this is None for any reason, we fall back to reading the os-provided path
-    let physical_current_dir = if config.use_logical_path {
-        None
-    } else {
-        match std::env::current_dir() {
-            Ok(x) => Some(x),
-            Err(e) => {
-                log::debug!("Error getting physical current directory: {}", e);
-                None
-            }
-        }
-    };
-    let current_dir = Path::new(
-        physical_current_dir
-            .as_ref()
-            .unwrap_or_else(|| &context.current_dir),
-    );
+    let current_dir = &context.current_dir;
 
     let home_dir = dirs::home_dir().unwrap();
     log::debug!("Current directory: {:?}", current_dir);
@@ -49,7 +29,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     let repo = &context.get_repo().ok()?;
 
     let dir_string = match &repo.root {
-        Some(repo_root) if config.truncate_to_repo && (repo_root != &home_dir) => {
+        Some(repo_root) if repo_root != &home_dir => {
             let repo_folder_name = repo_root.file_name().unwrap().to_str().unwrap();
 
             // Contract the path to the git repo root
@@ -60,25 +40,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     };
 
     // Truncate the dir string to the maximum number of path components
-    let truncated_dir_string = truncate(dir_string, config.truncation_length as usize);
-
-    if config.fish_style_pwd_dir_length > 0 {
-        // If user is using fish style path, we need to add the segment first
-        let contracted_home_dir = contract_path(&current_dir, &home_dir, HOME_SYMBOL);
-        let fish_style_dir = to_fish_style(
-            config.fish_style_pwd_dir_length as usize,
-            contracted_home_dir,
-            &truncated_dir_string,
-        );
-
-        module.create_segment(
-            "path",
-            &SegmentConfig {
-                value: &fish_style_dir,
-                style: None,
-            },
-        );
-    }
+    let truncated_dir_string = truncate(dir_string, 3);
 
     module.create_segment(
         "path",
@@ -87,8 +49,6 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
             style: None,
         },
     );
-
-    module.get_prefix().set_value("in ");
 
     Some(module)
 }
@@ -158,38 +118,6 @@ fn truncate(dir_string: String, length: usize) -> String {
 
     let truncated_components = &components[components.len() - length..];
     truncated_components.join("/")
-}
-
-/// Takes part before contracted path and replaces it with fish style path
-///
-/// Will take the first letter of each directory before the contracted path and
-/// use that in the path instead. See the following example.
-///
-/// Absolute Path: `/Users/Bob/Projects/work/a_repo`
-/// Contracted Path: `a_repo`
-/// With Fish Style: `~/P/w/a_repo`
-///
-/// Absolute Path: `/some/Path/not/in_a/repo/but_nested`
-/// Contracted Path: `in_a/repo/but_nested`
-/// With Fish Style: `/s/P/n/in_a/repo/but_nested`
-fn to_fish_style(pwd_dir_length: usize, dir_string: String, truncated_dir_string: &str) -> String {
-    let replaced_dir_string = dir_string.trim_end_matches(truncated_dir_string).to_owned();
-    let components = replaced_dir_string.split('/').collect::<Vec<&str>>();
-
-    if components.is_empty() {
-        return replaced_dir_string;
-    }
-
-    components
-        .into_iter()
-        .map(|word| match word {
-            "" => "",
-            _ if word.len() <= pwd_dir_length => word,
-            _ if word.starts_with('.') => &word[..=pwd_dir_length],
-            _ => &word[..pwd_dir_length],
-        })
-        .collect::<Vec<_>>()
-        .join("/")
 }
 
 #[cfg(test)]
@@ -294,42 +222,5 @@ mod tests {
         let path = "/starship/engines/booster/rocket";
         let output = truncate(path.to_string(), 3);
         assert_eq!(output, "engines/booster/rocket");
-    }
-
-    #[test]
-    fn fish_style_with_user_home_contracted_path() {
-        let path = "~/starship/engines/booster/rocket";
-        let output = to_fish_style(1, path.to_string(), "engines/booster/rocket");
-        assert_eq!(output, "~/s/");
-    }
-
-    #[test]
-    fn fish_style_with_user_home_contracted_path_and_dot_dir() {
-        let path = "~/.starship/engines/booster/rocket";
-        let output = to_fish_style(1, path.to_string(), "engines/booster/rocket");
-        assert_eq!(output, "~/.s/");
-    }
-
-    #[test]
-    fn fish_style_with_no_contracted_path() {
-        // `truncatation_length = 2`
-        let path = "/absolute/Path/not/in_a/repo/but_nested";
-        let output = to_fish_style(1, path.to_string(), "repo/but_nested");
-        assert_eq!(output, "/a/P/n/i/");
-    }
-
-    #[test]
-    fn fish_style_with_pwd_dir_len_no_contracted_path() {
-        // `truncatation_length = 2`
-        let path = "/absolute/Path/not/in_a/repo/but_nested";
-        let output = to_fish_style(2, path.to_string(), "repo/but_nested");
-        assert_eq!(output, "/ab/Pa/no/in/");
-    }
-
-    #[test]
-    fn fish_style_with_duplicate_directories() {
-        let path = "~/starship/tmp/C++/C++/C++";
-        let output = to_fish_style(1, path.to_string(), "C++");
-        assert_eq!(output, "~/s/t/C/C/");
     }
 }

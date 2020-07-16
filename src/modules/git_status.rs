@@ -1,22 +1,20 @@
+use ansi_term::Color;
 use git2::{Repository, Status};
 
-use super::{Context, Module, RootModuleConfig};
-
-use crate::config::SegmentConfig;
-use crate::configs::git_status::{CountConfig, GitStatusConfig};
+use super::{Context, Module};
 
 /// Creates a module with the Git branch in the current directory
 ///
 /// Will display the branch name if the current directory is a git repo
 /// By default, the following symbols will be used to represent the repo's status:
-///   - `=` – This branch has merge conflicts
-///   - `⇕` – This branch has diverged from the branch being tracked
-///   - `?` — There are untracked files in the working directory
-///   - `$` — A stash exists for the local repository
-///   - `!` — There are file modifications in the working directory
+///   - `!` – This branch has merge conflicts
+///   - `?` – This branch has diverged from the branch being tracked
+///   - `$stash ` — A stash exists for the local repository
+///   - `U` — There are untracked files in the working directory
+///   - `M` — There are file modifications in the working directory
 ///   - `+` — A new file has been added to the staging area
-///   - `»` — A renamed file has been added to the staging area
-///   - `✘` — A file's deletion has been added to the staging area
+///   - `R` — A renamed file has been added to the staging area
+///   - `D` — A file's deletion has been added to the staging area
 pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     let repo = context.get_repo().ok()?;
     let branch_name = repo.branch.as_ref()?;
@@ -24,17 +22,10 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     let repository = Repository::open(repo_root).ok()?;
 
     let mut module = context.new_module("git_status");
-    let config: GitStatusConfig = GitStatusConfig::try_load(module.config);
 
-    module
-        .get_prefix()
-        .set_value(config.prefix)
-        .set_style(config.style);
-    module
-        .get_suffix()
-        .set_value(config.suffix)
-        .set_style(config.style);
-    module.set_style(config.style);
+    module.get_prefix().set_value("[").set_style(Color::Red);
+    module.get_suffix().set_value("] ").set_style(Color::Red);
+    module.set_style(Color::Red);
 
     let ahead_behind = get_ahead_behind(&repository, branch_name);
     if ahead_behind == Ok((0, 0)) {
@@ -55,61 +46,21 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
 
     // Add the conflicted segment
     if let Ok(repo_status) = repo_status {
-        create_segment_with_count(
-            &mut module,
-            "conflicted",
-            repo_status.conflicted,
-            &config.conflicted,
-            config.conflicted_count,
-        );
+        create_segment_with_count(&mut module, "conflicted", repo_status.conflicted, "!");
     }
 
     // Add the stashed segment
     if stash_object.is_ok() {
-        module.create_segment("stashed", &config.stashed);
+        module.append_segment_str("stashed", "$stash ");
     }
 
     // Add all remaining status segments
     if let Ok(repo_status) = repo_status {
-        create_segment_with_count(
-            &mut module,
-            "deleted",
-            repo_status.deleted,
-            &config.deleted,
-            config.deleted_count,
-        );
-
-        create_segment_with_count(
-            &mut module,
-            "renamed",
-            repo_status.renamed,
-            &config.renamed,
-            config.renamed_count,
-        );
-
-        create_segment_with_count(
-            &mut module,
-            "modified",
-            repo_status.modified,
-            &config.modified,
-            config.modified_count,
-        );
-
-        create_segment_with_count(
-            &mut module,
-            "staged",
-            repo_status.staged,
-            &config.staged,
-            config.staged_count,
-        );
-
-        create_segment_with_count(
-            &mut module,
-            "untracked",
-            repo_status.untracked,
-            &config.untracked,
-            config.untracked_count,
-        );
+        create_segment_with_count(&mut module, "deleted", repo_status.deleted, "D");
+        create_segment_with_count(&mut module, "renamed", repo_status.renamed, "R");
+        create_segment_with_count(&mut module, "modified", repo_status.modified, "M");
+        create_segment_with_count(&mut module, "staged", repo_status.staged, "+");
+        create_segment_with_count(&mut module, "untracked", repo_status.untracked, "U");
     }
 
     if module.is_empty() {
@@ -119,22 +70,9 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     Some(module)
 }
 
-fn create_segment_with_count<'a>(
-    module: &mut Module<'a>,
-    name: &str,
-    count: usize,
-    config: &SegmentConfig<'a>,
-    count_config: CountConfig,
-) {
+fn create_segment_with_count<'a>(module: &mut Module<'a>, name: &str, count: usize, symbol: &str) {
     if count > 0 {
-        module.create_segment(name, &config);
-
-        if count_config.enabled {
-            module.create_segment(
-                &format!("{}_count", name),
-                &SegmentConfig::new(&count.to_string()).with_style(count_config.style),
-            );
-        }
+        module.append_segment_str(name, symbol);
     }
 }
 

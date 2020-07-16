@@ -235,31 +235,12 @@ impl<'a> ModuleConfig<'a> for SegmentConfig<'a> {
     }
 }
 
-impl<'a> SegmentConfig<'a> {
-    pub fn new(value: &'a str) -> Self {
-        Self { value, style: None }
-    }
-
-    /// Immutably set value
-    pub fn with_value(&self, value: &'a str) -> Self {
-        Self {
-            value,
-            style: self.style,
-        }
-    }
-
-    /// Immutably set style
-    pub fn with_style(&self, style: Option<Style>) -> Self {
-        Self {
-            value: self.value,
-            style,
-        }
-    }
-}
-
 impl Default for SegmentConfig<'static> {
     fn default() -> Self {
-        Self::new("")
+        Self {
+            value: "",
+            style: None,
+        }
     }
 }
 

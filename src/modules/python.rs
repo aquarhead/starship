@@ -3,7 +3,7 @@ use std::env;
 use std::path::Path;
 use std::process::Command;
 
-use super::{Context, Module, SegmentConfig};
+use super::{Context, Module};
 
 /// Creates a module with the current Python version
 ///
@@ -22,17 +22,14 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
         let mut module = context.new_module("python");
 
         module.set_style(Color::Cyan.dimmed());
-        module.create_segment("symbol", &SegmentConfig::new("Py "));
+        module.append_segment_str("symbol", ">Py ");
 
         let python_version = get_python_version()?;
         let formatted_version = format_python_version(&python_version);
-        module.create_segment("version", &SegmentConfig::new(&formatted_version));
+        module.append_segment_str("version", &formatted_version);
 
         if let Some(virtual_env) = get_python_virtual_env() {
-            module.create_segment(
-                "pipenv",
-                &SegmentConfig::new(&format!(" ({})", virtual_env)),
-            );
+            module.append_segment_str("pipenv", &format!(" ({})", virtual_env));
         };
 
         Some(module)

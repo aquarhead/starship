@@ -71,6 +71,7 @@ impl<'a> Module<'a> {
 
     pub fn append_segment_str(&mut self, name: &str, value: &str) {
         let mut segment = Segment::new(name);
+        segment.set_style(self.style);
         segment.set_value(value);
         self.segments.push(segment);
     }

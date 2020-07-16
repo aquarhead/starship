@@ -1,11 +1,10 @@
+use ansi_term::Color;
 use std::ffi::OsStr;
 use std::path::Path;
 use std::process::{Command, Output};
 use std::{env, fs};
 
-use super::{Context, Module, RootModuleConfig};
-
-use crate::configs::rust::RustConfig;
+use super::{Context, Module};
 
 /// Creates a module with the current Rust version
 ///
@@ -58,11 +57,10 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     };
 
     let mut module = context.new_module("rust");
-    let config = RustConfig::try_load(module.config);
-    module.set_style(config.style);
+    module.set_style(Color::Green.bold());
 
-    module.create_segment("symbol", &config.symbol);
-    module.create_segment("version", &config.version.with_value(&module_version));
+    module.append_segment_str("symbol", ">Rust ");
+    module.append_segment_str("version", &module_version);
 
     Some(module)
 }

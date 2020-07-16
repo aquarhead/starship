@@ -19,7 +19,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     let repo_root = repo.root.as_ref()?;
     let repository = Repository::open(repo_root).ok()?;
 
-    let module_style = Color::Red.bold();
+    let module_style = Color::White.bold();
     let mut module = context.new_module("git_track");
     module.set_style(module_style);
 

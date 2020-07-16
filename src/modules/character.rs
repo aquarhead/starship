@@ -23,7 +23,7 @@ pub fn module(context: &Context) -> Option<Module> {
         module.append_segment_str("<$>");
     } else {
         module.set_style(Color::Red.bold());
-        module.append_segment_str("T_T");
+        module.append_segment_str("</>");
     };
 
     Some(module)

@@ -22,14 +22,14 @@ pub fn module(context: &Context) -> Option<Module> {
         let mut module = context.new_module("python");
 
         module.set_style(Color::Cyan.dimmed());
-        module.append_segment_str("symbol", ">Py ");
+        module.append_segment_str(">Py ");
 
         let python_version = get_python_version()?;
         let formatted_version = format_python_version(&python_version);
-        module.append_segment_str("version", &formatted_version);
+        module.append_segment_str(&formatted_version);
 
         if let Some(virtual_env) = get_python_virtual_env() {
-            module.append_segment_str("pipenv", &format!(" ({})", virtual_env));
+            module.append_segment_str(&format!(" ({})", virtual_env));
         };
 
         Some(module)

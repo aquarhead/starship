@@ -29,13 +29,6 @@ fn main() {
         .help("The path that the prompt should render for")
         .takes_value(true);
 
-    let shell_arg = Arg::with_name("shell")
-        .value_name("SHELL")
-        .help(
-            "The name of the currently running shell\nCurrently supported options: bash, zsh, fish, powershell",
-        )
-        .required(true);
-
     let cmd_duration_arg = Arg::with_name("cmd_duration")
         .short("d")
         .long("cmd-duration")
@@ -73,7 +66,6 @@ fn main() {
         .subcommand(
             SubCommand::with_name("init")
                 .about("Prints the shell function used to execute starship")
-                .arg(&shell_arg)
                 .arg(&init_scripts_arg),
         )
         .subcommand(
@@ -89,11 +81,10 @@ fn main() {
 
     match matches.subcommand() {
         ("init", Some(sub_m)) => {
-            let shell_name = sub_m.value_of("shell").expect("Shell name missing.");
             if sub_m.is_present("print_full_init") {
-                init::init_main(shell_name).expect("can't init_main");
+                init::init_main().expect("can't init_main");
             } else {
-                init::init_stub(shell_name).expect("can't init_stub");
+                init::init_stub().expect("can't init_stub");
             }
         }
         ("prompt", Some(sub_m)) => print::prompt(sub_m.clone()),

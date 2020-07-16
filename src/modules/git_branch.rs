@@ -9,12 +9,12 @@ pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module("git_branch");
     module.set_style(Color::Blue.bold());
 
-    module.append_segment_str("symbol", "|=");
+    module.append_segment_str("|=");
 
     let repo = context.get_repo().ok()?;
     let branch_name = repo.branch.as_ref()?;
 
-    module.append_segment_str("name", branch_name);
+    module.append_segment_str(branch_name);
 
     Some(module)
 }

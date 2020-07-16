@@ -46,21 +46,21 @@ pub fn module(context: &Context) -> Option<Module> {
 
     // Add the conflicted segment
     if let Ok(repo_status) = repo_status {
-        create_segment_with_count(&mut module, "conflicted", repo_status.conflicted, "!");
+        create_segment_with_count(&mut module, repo_status.conflicted, "!");
     }
 
     // Add the stashed segment
     if stash_object.is_ok() {
-        module.append_segment_str("stashed", "$stash ");
+        module.append_segment_str("+stash+ ");
     }
 
     // Add all remaining status segments
     if let Ok(repo_status) = repo_status {
-        create_segment_with_count(&mut module, "deleted", repo_status.deleted, "D");
-        create_segment_with_count(&mut module, "renamed", repo_status.renamed, "R");
-        create_segment_with_count(&mut module, "modified", repo_status.modified, "M");
-        create_segment_with_count(&mut module, "staged", repo_status.staged, "+");
-        create_segment_with_count(&mut module, "untracked", repo_status.untracked, "U");
+        create_segment_with_count(&mut module, repo_status.deleted, "D");
+        create_segment_with_count(&mut module, repo_status.renamed, "R");
+        create_segment_with_count(&mut module, repo_status.modified, "M");
+        create_segment_with_count(&mut module, repo_status.staged, "+");
+        create_segment_with_count(&mut module, repo_status.untracked, "U");
     }
 
     if module.is_empty() {
@@ -70,9 +70,9 @@ pub fn module(context: &Context) -> Option<Module> {
     Some(module)
 }
 
-fn create_segment_with_count<'a>(module: &mut Module, name: &str, count: usize, symbol: &str) {
+fn create_segment_with_count<'a>(module: &mut Module, count: usize, symbol: &str) {
     if count > 0 {
-        module.append_segment_str(name, symbol);
+        module.append_segment_str(symbol);
     }
 }
 

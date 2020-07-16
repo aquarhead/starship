@@ -30,10 +30,10 @@ pub fn module(context: &Context) -> Option<Module> {
             let mut module = context.new_module("golang");
 
             module.set_style(Color::Cyan.dimmed());
-            module.append_segment_str("symbol", ">Go ");
+            module.append_segment_str(">Go ");
 
             let formatted_version = format_go_version(&go_version)?;
-            module.append_segment_str("version", &formatted_version);
+            module.append_segment_str(&formatted_version);
 
             Some(module)
         }

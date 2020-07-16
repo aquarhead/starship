@@ -1,6 +1,6 @@
 use ansi_term::Color;
 
-use super::{Context, Module, SegmentConfig};
+use super::{Context, Module};
 
 /// Creates a module for the prompt character
 ///
@@ -18,19 +18,13 @@ pub fn module(context: &Context) -> Option<Module> {
     let exit_code = props.get("status_code").unwrap_or(&exit_code_default);
     let exit_success = exit_code == "0";
 
-    let sc = if exit_success {
-        SegmentConfig {
-            value: "<$>",
-            style: Some(Color::Green.bold()),
-        }
+    if exit_success {
+        module.set_style(Color::Green.bold());
+        module.append_segment_str("<$>");
     } else {
-        SegmentConfig {
-            value: "T_T",
-            style: Some(Color::Red.bold()),
-        }
+        module.set_style(Color::Red.bold());
+        module.append_segment_str("T_T");
     };
-
-    module.create_segment("symbol", &sc);
 
     Some(module)
 }

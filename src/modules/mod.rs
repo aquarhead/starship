@@ -14,6 +14,5 @@ pub mod line_break;
 pub mod python;
 pub mod rust;
 
-use crate::config::SegmentConfig;
 use crate::context::Context;
 use crate::module::Module;

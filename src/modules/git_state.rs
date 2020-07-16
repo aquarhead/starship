@@ -31,49 +31,42 @@ pub fn module(context: &Context) -> Option<Module> {
         _ => panic!("Expected to have a label at this point in the control flow."),
     };
 
-    module.append_segment_str(label.segment_name, label.message_default);
+    module.append_segment_str(label.message_default);
 
     if let StateDescription::LabelAndProgress(_, progress) = state_description {
-        module.append_segment_str("progress_current", &format!(" {}", progress.current));
-        module.append_segment_str("progress_divider", "/");
-        module.append_segment_str("progress_total", &format!("{}", progress.total));
+        module.append_segment_str(&format!(" {}", progress.current));
+        module.append_segment_str("/");
+        module.append_segment_str(&format!("{}", progress.total));
     }
 
     Some(module)
 }
 
 static MERGE_LABEL: StateLabel = StateLabel {
-    segment_name: "merge",
     message_default: "MERGING",
 };
 
 static REVERT_LABEL: StateLabel = StateLabel {
-    segment_name: "revert",
     message_default: "REVERTING",
 };
 
 static CHERRY_LABEL: StateLabel = StateLabel {
-    segment_name: "cherry_pick",
     message_default: "CHERRY-PICKING",
 };
 
 static BISECT_LABEL: StateLabel = StateLabel {
-    segment_name: "bisect",
     message_default: "BISECTING",
 };
 
 static AM_LABEL: StateLabel = StateLabel {
-    segment_name: "am",
     message_default: "AM",
 };
 
 static REBASE_LABEL: StateLabel = StateLabel {
-    segment_name: "rebase",
     message_default: "REBASING",
 };
 
 static AM_OR_REBASE_LABEL: StateLabel = StateLabel {
-    segment_name: "am_or_rebase",
     message_default: "AM/REBASE",
 };
 
@@ -149,7 +142,6 @@ enum StateDescription {
 }
 
 struct StateLabel {
-    segment_name: &'static str,
     message_default: &'static str,
 }
 

@@ -59,8 +59,8 @@ pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module("rust");
     module.set_style(Color::Green.bold());
 
-    module.append_segment_str("symbol", ">Rust ");
-    module.append_segment_str("version", &module_version);
+    module.append_segment_str(">Rust ");
+    module.append_segment_str(&module_version);
 
     Some(module)
 }

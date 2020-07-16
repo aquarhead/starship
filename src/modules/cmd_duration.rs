@@ -24,7 +24,7 @@ pub fn module(context: &Context) -> Option<Module> {
     };
 
     module.set_style(module_color);
-    module.append_segment_str("cmd_duration", &format!("tók {}", render_time(elapsed)));
+    module.append_segment_str(&format!("tók {}", render_time(elapsed)));
 
     Some(module)
 }

@@ -20,8 +20,8 @@ pub fn module(context: &Context) -> Option<Module> {
         return None;
     }
 
-    module.append_segment_str("symbol", " +");
-    module.append_segment_str("number", &num_of_jobs.to_string());
+    module.append_segment_str(" +");
+    module.append_segment_str(&num_of_jobs.to_string());
 
     Some(module)
 }

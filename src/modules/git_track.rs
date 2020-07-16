@@ -36,10 +36,10 @@ pub fn module(context: &Context) -> Option<Module> {
         let behind_segment = format!("{}{}", GIT_STATUS_BEHIND, behind);
 
         if ahead > 0 {
-            module.append_segment_str("ahead", &ahead_segment);
+            module.append_segment_str(&ahead_segment);
         }
         if behind > 0 {
-            module.append_segment_str("behind", &behind_segment);
+            module.append_segment_str(&behind_segment);
         }
     }
 

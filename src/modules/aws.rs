@@ -19,9 +19,9 @@ pub fn module(context: &Context) -> Option<Module> {
 
     let mut module = context.new_module("aws");
     module.set_style(Color::Yellow.bold());
-    module.append_segment_str("symbol", ">AWS ");
-    module.append_segment_str("profile", &aws_profile);
-    module.append_segment_str("region", &aws_region);
+    module.append_segment_str(">AWS ");
+    module.append_segment_str(&aws_profile);
+    module.append_segment_str(&aws_region);
 
     Some(module)
 }

@@ -2,7 +2,7 @@ use ansi_term::Color;
 use path_slash::PathExt;
 use std::path::Path;
 
-use super::{Context, Module, SegmentConfig};
+use super::{Context, Module};
 
 /// Creates a module with the current directory
 ///
@@ -40,15 +40,9 @@ pub fn module(context: &Context) -> Option<Module> {
     };
 
     // Truncate the dir string to the maximum number of path components
-    let truncated_dir_string = truncate(dir_string, 3);
+    let truncated_dir_string = truncate(dir_string, 7);
 
-    module.create_segment(
-        "path",
-        &SegmentConfig {
-            value: &truncated_dir_string,
-            style: None,
-        },
-    );
+    module.append_segment_str(&truncated_dir_string);
 
     Some(module)
 }

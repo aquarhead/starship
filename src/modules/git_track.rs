@@ -23,30 +23,22 @@ pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module();
     module.set_style(module_style);
 
-    let ahead_behind = get_ahead_behind(&repository, branch_name);
-    if ahead_behind == Ok((0, 0)) {
-        log::trace!("No ahead/behind found");
-    } else {
-        log::debug!("Repo ahead/behind: {:?}", ahead_behind);
-    }
-
     // Add the ahead/behind segment
-    if let Ok((ahead, behind)) = ahead_behind {
-        let ahead_segment = format!("{}{}", GIT_STATUS_AHEAD, ahead);
-        let behind_segment = format!("{}{}", GIT_STATUS_BEHIND, behind);
+    match get_ahead_behind(&repository, branch_name) {
+        Ok((0, 0)) => None,
+        Ok((ahead, behind)) => {
+            let ahead_segment = format!("{}{}", GIT_STATUS_AHEAD, ahead);
+            let behind_segment = format!("{}{}", GIT_STATUS_BEHIND, behind);
 
-        if ahead > 0 {
-            module.append_segment_str(&ahead_segment);
+            if ahead > 0 {
+                module.append_segment_str(&ahead_segment);
+            }
+            if behind > 0 {
+                module.append_segment_str(&behind_segment);
+            }
+            Some(module)
         }
-        if behind > 0 {
-            module.append_segment_str(&behind_segment);
-        }
-    }
-
-    if module.is_empty() {
-        None
-    } else {
-        Some(module)
+        _ => None,
     }
 }
 

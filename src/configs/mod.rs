@@ -15,7 +15,6 @@ pub mod kubernetes;
 pub mod memory_usage;
 pub mod nodejs;
 pub mod package;
-pub mod python;
 pub mod ruby;
 pub mod rust;
 mod starship_root;

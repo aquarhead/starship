@@ -56,7 +56,7 @@ pub fn module(context: &Context) -> Option<Module> {
         format_rustc_version(execute_rustc_version()?)
     };
 
-    let mut module = context.new_module("rust");
+    let mut module = context.new_module();
     module.set_style(Color::Green.bold());
 
     module.append_segment_str(">Rust ");

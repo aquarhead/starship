@@ -6,7 +6,7 @@ use super::{Context, Module};
 ///
 /// Will display the branch name if the current directory is a git repo
 pub fn module(context: &Context) -> Option<Module> {
-    let mut module = context.new_module("git_branch");
+    let mut module = context.new_module();
     module.set_style(Color::Blue.bold());
 
     module.append_segment_str("|=");

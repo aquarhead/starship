@@ -21,7 +21,7 @@ pub fn module(context: &Context) -> Option<Module> {
     let repo_root = repo.root.as_ref()?;
     let repository = Repository::open(repo_root).ok()?;
 
-    let mut module = context.new_module("git_status");
+    let mut module = context.new_module();
 
     module.get_prefix().set_value("[").set_style(Color::Red);
     module.get_suffix().set_value("] ").set_style(Color::Red);

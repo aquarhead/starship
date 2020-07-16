@@ -19,7 +19,7 @@ pub fn module(context: &Context) -> Option<Module> {
             const ELIXIR_CHAR: &str = " ";
             let module_color = Color::Blue.bold();
 
-            let mut module = context.new_module("elixir");
+            let mut module = context.new_module();
             module.set_style(module_color);
 
             let ev = extract_version(raw_version);

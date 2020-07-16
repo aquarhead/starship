@@ -27,7 +27,7 @@ pub fn module(context: &Context) -> Option<Module> {
 
     match get_go_version() {
         Some(go_version) => {
-            let mut module = context.new_module("golang");
+            let mut module = context.new_module();
 
             module.set_style(Color::Cyan.dimmed());
             module.append_segment_str(">Go ");

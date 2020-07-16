@@ -6,9 +6,6 @@ use std::fmt;
 /// A module is a collection of segments showing data for a single integration
 /// (e.g. The git module shows the current git branch and status)
 pub struct Module {
-    /// The module's name, to be used in configuration and logging.
-    _name: String,
-
     /// The styling to be inherited by all segments contained within this module.
     style: Style,
 
@@ -24,9 +21,8 @@ pub struct Module {
 
 impl<'a> Module {
     /// Creates a module with no segments.
-    pub fn new(name: &str) -> Module {
+    pub fn new() -> Module {
         Module {
-            _name: name.to_string(),
             style: Style::default(),
             prefix: Affix::default_prefix(),
             segments: Vec::new(),

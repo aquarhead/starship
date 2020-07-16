@@ -11,7 +11,7 @@ use super::{Context, Module};
 /// - If the exit-code was anything else, the arrow will be formatted with
 /// `style_failure` (red by default)
 pub fn module(context: &Context) -> Option<Module> {
-    let mut module = context.new_module("character");
+    let mut module = context.new_module();
 
     let props = &context.properties;
     let exit_code_default = std::string::String::from("0");

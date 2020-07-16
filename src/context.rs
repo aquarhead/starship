@@ -82,8 +82,8 @@ impl<'a> Context<'a> {
     }
 
     /// Create a new module
-    pub fn new_module(&self, name: &str) -> Module {
-        Module::new(name)
+    pub fn new_module(&self) -> Module {
+        Module::new()
     }
 
     // returns a new ScanDir struct with reference to current dir_files of context

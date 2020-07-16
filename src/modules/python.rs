@@ -19,7 +19,7 @@ pub fn module(context: &Context) -> Option<Module> {
 
     // expect `PIPENV_ACTIVE=1`
     if let Ok(_) = env::var("PIPENV_ACTIVE") {
-        let mut module = context.new_module("python");
+        let mut module = context.new_module();
 
         module.set_style(Color::Cyan.dimmed());
         module.append_segment_str(">Py ");

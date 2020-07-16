@@ -17,7 +17,7 @@ use super::{Context, Module};
 pub fn module(context: &Context) -> Option<Module> {
     const HOME_SYMBOL: &str = "~";
 
-    let mut module = context.new_module("directory");
+    let mut module = context.new_module();
 
     module.set_style(Color::Cyan.bold());
 

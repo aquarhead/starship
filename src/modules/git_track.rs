@@ -20,7 +20,7 @@ pub fn module(context: &Context) -> Option<Module> {
     let repository = Repository::open(repo_root).ok()?;
 
     let module_style = Color::White.bold();
-    let mut module = context.new_module("git_track");
+    let mut module = context.new_module();
     module.set_style(module_style);
 
     let ahead_behind = get_ahead_behind(&repository, branch_name);

@@ -52,11 +52,6 @@ impl<'a> Module {
         self.segments.push(segment);
     }
 
-    /// Get module's name
-    pub fn get_name(&self) -> &String {
-        &self._name
-    }
-
     /// Whether a module has non-empty segments
     pub fn is_empty(&self) -> bool {
         self.segments.iter().all(|segment| segment.is_empty())
@@ -103,10 +98,6 @@ impl<'a> Module {
         ansi_strings.push(self.suffix.ansi_string());
 
         ansi_strings
-    }
-
-    pub fn to_string_without_prefix(&self) -> String {
-        ANSIStrings(&self.ansi_strings()[1..]).to_string()
     }
 }
 

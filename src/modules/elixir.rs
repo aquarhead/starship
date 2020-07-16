@@ -16,7 +16,7 @@ pub fn module(context: &Context) -> Option<Module> {
 
     match get_raw_version() {
         Some(raw_version) => {
-            const ELIXIR_CHAR: &str = " ";
+            const ELIXIR_CHAR: &str = ">Elixir ";
             let module_color = Color::Blue.bold();
 
             let mut module = context.new_module();

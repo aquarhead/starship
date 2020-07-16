@@ -17,7 +17,6 @@ use super::{Context, Module};
 ///   - `D` — A file's deletion has been added to the staging area
 pub fn module(context: &Context) -> Option<Module> {
     let repo = context.get_repo().ok()?;
-    let branch_name = repo.branch.as_ref()?;
     let repo_root = repo.root.as_ref()?;
     let repository = Repository::open(repo_root).ok()?;
 
@@ -26,13 +25,6 @@ pub fn module(context: &Context) -> Option<Module> {
     module.get_prefix().set_value("[").set_style(Color::Red);
     module.get_suffix().set_value("] ").set_style(Color::Red);
     module.set_style(Color::Red);
-
-    let ahead_behind = get_ahead_behind(&repository, branch_name);
-    if ahead_behind == Ok((0, 0)) {
-        log::trace!("No ahead/behind found");
-    } else {
-        log::debug!("Repo ahead/behind: {:?}", ahead_behind);
-    }
 
     let stash_object = repository.revparse_single("refs/stash");
     if stash_object.is_ok() {
@@ -132,22 +124,6 @@ fn is_staged(status: Status) -> bool {
 
 fn is_untracked(status: Status) -> bool {
     status.is_wt_new()
-}
-
-/// Compares the current branch with the branch it is tracking to determine how
-/// far ahead or behind it is in relation
-fn get_ahead_behind(
-    repository: &Repository,
-    branch_name: &str,
-) -> Result<(usize, usize), git2::Error> {
-    let branch_object = repository.revparse_single(branch_name)?;
-    let tracking_branch_name = format!("{}@{{upstream}}", branch_name);
-    let tracking_object = repository.revparse_single(&tracking_branch_name)?;
-
-    let branch_oid = branch_object.id();
-    let tracking_oid = tracking_object.id();
-
-    repository.graph_ahead_behind(branch_oid, tracking_oid)
 }
 
 #[derive(Default, Debug, Copy, Clone)]

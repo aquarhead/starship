@@ -38,7 +38,7 @@ impl<'a> Module {
 
     /// Whether a module has non-empty segments
     pub fn is_empty(&self) -> bool {
-        self.segments.iter().all(|segment| segment.is_empty())
+        self.segments.is_empty()
     }
 
     /// Get the module's prefix

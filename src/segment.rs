@@ -29,9 +29,4 @@ impl Segment {
     pub fn ansi_string(&self, style: &Style) -> ANSIString {
         style.paint(&self.value)
     }
-
-    /// Determines if the segment contains a value.
-    pub fn is_empty(&self) -> bool {
-        self.value.trim().is_empty()
-    }
 }

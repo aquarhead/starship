@@ -125,10 +125,12 @@ impl<'a> Context<'a> {
         self.dir_files
             .get_or_try_init(|| -> Result<Vec<PathBuf>, std::io::Error> {
                 let dir_files = fs::read_dir(&self.current_dir)?
-                    .take_while(|_item| {
-                        SystemTime::now().duration_since(start_time).unwrap() < scan_timeout
+                    .enumerate()
+                    .take_while(|(n, _item)| {
+                        n & 0xFF != 0
+                            || SystemTime::now().duration_since(start_time).unwrap() < scan_timeout
                     })
-                    .filter_map(Result::ok)
+                    .filter_map(|(_n, entry)| entry.ok())
                     .map(|entry| entry.path())
                     .collect::<Vec<PathBuf>>();
 

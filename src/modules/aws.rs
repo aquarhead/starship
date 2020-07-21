@@ -14,12 +14,12 @@ pub fn module(context: &Context) -> Option<Module> {
     let aws_region = if aws_profile.is_empty() || aws_region.is_empty() {
         aws_region
     } else {
-        format!("({})", aws_region)
+        format!("@{}", aws_region)
     };
 
     let mut module = context.new_module();
     module.set_style(Color::Yellow.bold());
-    module.append_segment_str(">AWS ");
+    module.append_segment_str(">AWS:");
     module.append_segment_str(&aws_profile);
     module.append_segment_str(&aws_region);
 

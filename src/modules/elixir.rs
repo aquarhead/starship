@@ -11,7 +11,7 @@ pub fn module(context: &Context) -> Option<Module> {
         let mut module = context.new_module();
         module.set_style(Color::Blue.bold());
 
-        module.append_segment_str(">Elixir");
+        module.append_segment_str("+Elixir");
 
         Some(module)
     } else {

@@ -22,7 +22,7 @@ pub fn module(context: &Context) -> Option<Module> {
         let mut module = context.new_module();
 
         module.set_style(Color::Cyan.dimmed());
-        module.append_segment_str(">Py ");
+        module.append_segment_str("+Py ");
 
         let python_version = get_python_version()?;
         let formatted_version = format_python_version(&python_version);

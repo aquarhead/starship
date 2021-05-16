@@ -1,4 +1,4 @@
-use ansi_term::Color;
+use ansi_term::{Color, Style};
 use std::env;
 use std::path::Path;
 use std::process::Command;
@@ -21,7 +21,7 @@ pub fn module(context: &Context) -> Option<Module> {
     if let Ok(_) = env::var("PIPENV_ACTIVE") {
         let mut module = context.new_module();
 
-        module.set_style(Color::Cyan.dimmed());
+        module.set_style(Style::new().fg(Color::White).on(Color::Red).strikethrough());
         module.append_segment_str("+Py ");
 
         let python_version = get_python_version()?;

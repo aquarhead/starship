@@ -10,10 +10,6 @@ use super::{Context, Module};
 ///   - `⇡` – This branch is ahead of the branch being tracked
 ///   - `⇣` – This branch is behind of the branch being tracked
 pub fn module(context: &Context) -> Option<Module> {
-    // This is the order that the sections will appear in
-    const GIT_STATUS_AHEAD: &str = "⇡";
-    const GIT_STATUS_BEHIND: &str = "⇣";
-
     let repo = context.get_repo().ok()?;
     let branch_name = repo.branch.as_ref()?;
     let repo_root = repo.root.as_ref()?;
@@ -27,14 +23,11 @@ pub fn module(context: &Context) -> Option<Module> {
     match get_ahead_behind(&repository, branch_name) {
         Ok((0, 0)) => None,
         Ok((ahead, behind)) => {
-            let ahead_segment = format!("{}{}", GIT_STATUS_AHEAD, ahead);
-            let behind_segment = format!("{}{}", GIT_STATUS_BEHIND, behind);
-
             if ahead > 0 {
-                module.append_segment_str(&ahead_segment);
+                module.append_segment_str(&format!("⇡{}", ahead));
             }
             if behind > 0 {
-                module.append_segment_str(&behind_segment);
+                module.append_segment_str(&format!("⇣{}", behind));
             }
             Some(module)
         }

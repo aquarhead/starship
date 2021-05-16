@@ -175,6 +175,7 @@ impl<'a> ScanDir<'a> {
         self
     }
 
+    #[allow(dead_code)]
     pub const fn set_folders(mut self, folders: &'a [&'a str]) -> Self {
         self.folders = folders;
         self

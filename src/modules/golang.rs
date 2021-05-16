@@ -8,37 +8,30 @@ use super::{Context, Module};
 /// Will display the Go version if any of the following criteria are met:
 ///     - Current directory contains a `go.mod` file
 ///     - Current directory contains a `go.sum` file
-///     - Current directory contains a `glide.yaml` file
-///     - Current directory contains a `Gopkg.yml` file
-///     - Current directory contains a `Gopkg.lock` file
-///     - Current directory contains a `Godeps` directory
 ///     - Current directory contains a file with the `.go` extension
 pub fn module(context: &Context) -> Option<Module> {
     let is_go_project = context
         .try_begin_scan()?
-        .set_files(&["go.mod", "go.sum", "glide.yaml", "Gopkg.yml", "Gopkg.lock"])
+        .set_files(&["go.mod", "go.sum"])
         .set_extensions(&["go"])
-        .set_folders(&["Godeps"])
         .is_match();
 
     if !is_go_project {
         return None;
     }
 
-    match get_go_version() {
-        Some(go_version) => {
-            let mut module = context.new_module();
+    let mut module = context.new_module();
 
-            module.set_style(Color::Cyan.dimmed());
-            module.append_segment_str("+Go ");
+    module.set_style(Color::Cyan.dimmed());
+    module.append_segment_str("+Go ");
 
-            let formatted_version = format_go_version(&go_version)?;
-            module.append_segment_str(&formatted_version);
-
-            Some(module)
+    if let Some(go_version) = get_go_version() {
+        if let Some(ver) = format_go_version(&go_version) {
+            module.append_segment_str(&ver);
         }
-        None => None,
     }
+
+    Some(module)
 }
 
 fn get_go_version() -> Option<String> {

@@ -12,30 +12,26 @@ use super::{Context, Module};
 pub fn module(context: &Context) -> Option<Module> {
     // Fast escape track
     let is_py_project = context.try_begin_scan()?.set_files(&["Pipfile"]).is_match();
+    let pipenv = env::var("PIPENV_ACTIVE").is_ok();
 
-    if !is_py_project {
+    if !is_py_project && !pipenv {
         return None;
     }
 
-    // expect `PIPENV_ACTIVE=1`
-    if let Ok(_) = env::var("PIPENV_ACTIVE") {
-        let mut module = context.new_module();
+    let mut module = context.new_module();
 
-        module.set_style(Style::new().fg(Color::White).on(Color::Red).strikethrough());
-        module.append_segment_str("+Py ");
+    module.set_style(Style::new().fg(Color::White).on(Color::Red).strikethrough());
+    module.append_segment_str("+Py ");
 
-        let python_version = get_python_version()?;
-        let formatted_version = format_python_version(&python_version);
-        module.append_segment_str(&formatted_version);
+    let python_version = get_python_version()?;
+    let formatted_version = format_python_version(&python_version);
+    module.append_segment_str(&formatted_version);
 
-        if let Some(virtual_env) = get_python_virtual_env() {
-            module.append_segment_str(&format!(" ({})", virtual_env));
-        };
+    if let Some(virtual_env) = get_python_virtual_env() {
+        module.append_segment_str(&format!(" ({})", virtual_env));
+    };
 
-        Some(module)
-    } else {
-        None
-    }
+    Some(module)
 }
 
 fn get_python_version() -> Option<String> {

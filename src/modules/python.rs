@@ -10,11 +10,7 @@ use super::{Context, Module};
 /// Will display the Python version if any of the following criteria are met:
 ///     - Is in a `pipenv shell`
 pub fn module(context: &Context) -> Option<Module> {
-    // Fast escape track
-    let is_py_project = context.try_begin_scan()?.set_files(&["Pipfile"]).is_match();
-    let pipenv = env::var("PIPENV_ACTIVE").is_ok();
-
-    if !is_py_project && !pipenv {
+    if env::var("PIPENV_ACTIVE").is_err() {
         return None;
     }
 

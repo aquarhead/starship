@@ -9,8 +9,8 @@ pub fn module(context: &Context) -> Option<Module> {
     if aws_profile.is_empty() {
         return None;
     }
-    let aws_region = env::var("AWS_REGION")
-        .or(env::var("AWS_DEFAULT_REGION"))
+    let aws_region = env::var("AWS_DEFAULT_REGION")
+        .or(env::var("AWS_REGION"))
         .map_or(String::new(), |r| {
             if r == "eu-central-1" {
                 String::new()

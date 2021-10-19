@@ -2,7 +2,6 @@
 pub mod aws;
 pub mod cmd_duration;
 pub mod directory;
-pub mod elixir;
 pub mod git_branch;
 pub mod git_state;
 pub mod git_status;
@@ -13,6 +12,7 @@ pub mod line_break;
 pub mod prompt;
 pub mod python;
 pub mod rust;
+pub mod kube;
 
 use crate::context::Context;
 use crate::module::Module;

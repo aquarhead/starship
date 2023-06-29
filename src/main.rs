@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate clap;
-
 mod context;
 mod init;
 mod module;
@@ -49,9 +46,9 @@ fn main() {
     let matches = App::new("starship")
         .about("The cross-shell prompt for astronauts. ☄🌌️")
         // pull the version number from Cargo.toml
-        .version(crate_version!())
+        .version(clap::crate_version!())
         // pull the authors from Cargo.toml
-        .author(crate_authors!())
+        .author(clap::crate_authors!())
         .after_help("https://github.com/starship/starship")
         .setting(AppSettings::SubcommandRequiredElseHelp)
         .subcommand(

@@ -22,8 +22,8 @@ pub fn module(context: &Context) -> Option<Module> {
 
     let mut module = context.new_module();
 
-    module.get_prefix().set_value("[").set_style(Color::Red);
-    module.get_suffix().set_value("] ").set_style(Color::Red);
+    module.get_prefix().set_value("").set_style(Color::Red);
+    module.get_suffix().set_value(" ").set_style(Color::Red);
     module.set_style(Color::Red);
 
     let stash_object = repository.revparse_single("refs/stash");

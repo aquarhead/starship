@@ -21,8 +21,8 @@ pub fn module(context: &Context) -> Option<Module> {
     }
 
     module.set_style(Color::Blue.bold());
-    module.get_prefix().set_value("(");
-    module.get_suffix().set_value(") ");
+    module.get_prefix().set_value("");
+    module.get_suffix().set_value(" ");
 
     let label = match state_description {
         StateDescription::Label(label) => label,

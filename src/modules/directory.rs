@@ -53,7 +53,7 @@ pub fn module(context: &Context) -> Option<Module> {
 /// `top_level_replacement`.
 fn contract_path(full_path: &Path, top_level_path: &Path, top_level_replacement: &str) -> String {
     if !full_path.starts_with(top_level_path) {
-        return full_path.to_slash().unwrap();
+        return full_path.to_slash().unwrap().to_string();
     }
 
     if full_path == top_level_path {

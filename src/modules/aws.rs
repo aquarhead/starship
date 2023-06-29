@@ -21,7 +21,7 @@ pub fn module(context: &Context) -> Option<Module> {
 
     let mut module = context.new_module();
     module.set_style(Color::Yellow.normal());
-    module.append_segment_str("-<");
+    module.append_segment_str("~@");
     module.append_segment_str(&aws_profile);
     module.append_segment_str(&aws_region);
 

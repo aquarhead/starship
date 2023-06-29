@@ -9,7 +9,7 @@ pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module();
     module.set_style(Color::Blue);
 
-    module.append_segment_str(" ");
+    module.append_segment_str("");
 
     let repo = context.get_repo().ok()?;
     let branch_name = repo.branch.as_ref()?;

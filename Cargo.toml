@@ -14,7 +14,7 @@ exclude = ["docs/**/*"]
 clap = "2"
 ansi_term = "0.12"
 dirs = "5"
-git2 = { version = "0.17", default-features = false }
+git2 = { version = "0.18", default-features = false }
 pretty_env_logger = "0.5"
 log = "0.4"
 path-slash = "0.2"

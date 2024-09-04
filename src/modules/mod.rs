@@ -8,11 +8,12 @@ pub mod git_status;
 pub mod git_track;
 pub mod golang;
 pub mod jobs;
+pub mod kube;
 pub mod line_break;
 pub mod prompt;
 pub mod python;
 pub mod rust;
-pub mod kube;
+pub mod tailscale;
 
 use crate::context::Context;
 use crate::module::Module;

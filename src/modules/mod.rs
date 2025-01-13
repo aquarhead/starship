@@ -10,6 +10,7 @@ pub mod golang;
 pub mod jobs;
 pub mod kube;
 pub mod line_break;
+pub mod plaio;
 pub mod prompt;
 pub mod python;
 pub mod rust;

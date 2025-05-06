@@ -21,10 +21,10 @@ starship_precmd() {
     if [[ ! -z "${STARSHIP_START_TIME+1}" ]]; then
         STARSHIP_END_TIME="$(date +%s)"
         STARSHIP_DURATION=$((STARSHIP_END_TIME - STARSHIP_START_TIME))
-        PROMPT="$(::STARSHIP:: prompt --status=$STATUS --cmd-duration=$STARSHIP_DURATION --jobs="$NUM_JOBS")"
+        PROMPT="$(::STARSHIP:: prompt --status $STATUS --cmd-duration $STARSHIP_DURATION --jobs "$NUM_JOBS")"
         unset STARSHIP_START_TIME
     else
-        PROMPT="$(::STARSHIP:: prompt --status=$STATUS --jobs="$NUM_JOBS")"
+        PROMPT="$(::STARSHIP:: prompt --status $STATUS --jobs "$NUM_JOBS")"
     fi
 }
 

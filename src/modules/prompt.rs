@@ -13,12 +13,7 @@ use super::{Context, Module};
 pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module();
 
-    let props = &context.properties;
-    let exit_code_default = std::string::String::from("0");
-    let exit_code = props.get("status_code").unwrap_or(&exit_code_default);
-    let exit_success = exit_code == "0";
-
-    if exit_success {
+    if context.status_code.as_ref().map_or(true, |sc| sc == "0") {
         module.set_style(Color::Green.bold());
         module.append_segment_str("<$>");
     } else {

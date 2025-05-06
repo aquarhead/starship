@@ -8,14 +8,7 @@ pub fn module(context: &Context) -> Option<Module> {
 
     module.set_style(Color::Blue.bold());
 
-    let props = &context.properties;
-    let num_of_jobs = props
-        .get("jobs")
-        .unwrap_or(&"0".into())
-        .trim()
-        .parse::<i64>()
-        .ok()?;
-
+    let num_of_jobs = context.jobs;
     if num_of_jobs == 0 {
         return None;
     }

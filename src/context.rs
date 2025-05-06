@@ -1,9 +1,8 @@
 use crate::module::Module;
 
-use clap::ArgMatches;
 use git2::{Repository, RepositoryState};
 use once_cell::sync::OnceCell;
-use std::collections::HashMap;
+use pico_args::Arguments;
 use std::env;
 use std::ffi::OsStr;
 use std::fs;
@@ -14,28 +13,30 @@ use std::time::{Duration, Instant};
 /// Context contains data or common methods that may be used by multiple modules.
 /// The data contained within Context will be relevant to this particular rendering
 /// of the prompt.
-pub struct Context<'a> {
+pub struct Context {
     /// The current working directory that starship is being called in.
     pub current_dir: PathBuf,
 
+    pub cmd_duration: Option<u64>,
+    pub jobs: u64,
+    pub status_code: Option<String>,
+
     /// A vector containing the full paths of all the files in `current_dir`.
     dir_files: OnceCell<Vec<PathBuf>>,
-
-    /// Properties to provide to modules.
-    pub properties: HashMap<&'a str, String>,
 
     /// Private field to store Git information for modules who need it
     repo: OnceCell<Repo>,
 }
 
-impl<'a> Context<'a> {
+impl Context {
     /// Identify the current working directory and create an instance of Context
     /// for it.
-    pub fn new(arguments: ArgMatches) -> Context {
+    pub fn new(mut pargs: Arguments) -> Context {
         // Retrieve the "path" flag. If unavailable, use the current directory instead.
-        let path = arguments
-            .value_of("path")
-            .map(From::from)
+
+        let path = pargs
+            .opt_value_from_str("--path")
+            .unwrap()
             .unwrap_or_else(|| {
                 env::var("PWD").map(PathBuf::from).unwrap_or_else(|err| {
                     log::debug!("Unable to get path from $PWD: {}", err);
@@ -43,30 +44,20 @@ impl<'a> Context<'a> {
                 })
             });
 
-        Context::new_with_dir(arguments, path)
-    }
-
-    /// Create a new instance of Context for the provided directory
-    pub fn new_with_dir<T>(arguments: ArgMatches, dir: T) -> Context
-    where
-        T: Into<PathBuf>,
-    {
-        // Unwrap the clap arguments into a simple hashtable
-        // we only care about single arguments at this point, there isn't a
-        // use-case for a list of arguments yet.
-        let properties: HashMap<&str, std::string::String> = arguments
-            .args
-            .iter()
-            .filter(|(_, v)| !v.vals.is_empty())
-            .map(|(a, b)| (*a, b.vals.first().cloned().unwrap().into_string().unwrap()))
-            .collect();
-
-        // TODO: Currently gets the physical directory. Get the logical directory.
-        let current_dir = Context::expand_tilde(dir.into());
+        let current_dir = Context::expand_tilde(path);
 
         Context {
-            properties,
             current_dir,
+            cmd_duration: pargs
+                .opt_value_from_fn("--cmd_duration", |x| x.parse())
+                .ok()
+                .flatten(),
+            jobs: pargs
+                .opt_value_from_fn("--jobs", |x| x.parse())
+                .ok()
+                .flatten()
+                .unwrap_or(0),
+            status_code: pargs.opt_value_from_str("--status_code").ok().flatten(),
             dir_files: OnceCell::new(),
             repo: OnceCell::new(),
         }
@@ -88,7 +79,7 @@ impl<'a> Context<'a> {
 
     // returns a new ScanDir struct with reference to current dir_files of context
     // see ScanDir for methods
-    pub fn try_begin_scan(&'a self) -> Option<ScanDir<'a>> {
+    pub fn try_begin_scan(&self) -> Option<ScanDir> {
         Some(ScanDir {
             dir_files: self.get_dir_files().ok()?,
             files: &[],

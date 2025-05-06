@@ -1,11 +1,11 @@
-use clap::ArgMatches;
+use pico_args::Arguments;
 use std::fmt::Write as FmtWrite;
 use std::io::{self, Write};
 
 use crate::context::Context;
 use crate::modules;
 
-pub fn prompt(args: ArgMatches) {
+pub fn prompt(args: Arguments) {
     let context = Context::new(args);
     let stdout = io::stdout();
     let mut handle = stdout.lock();

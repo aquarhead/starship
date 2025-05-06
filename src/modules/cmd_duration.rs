@@ -9,12 +9,7 @@ use super::{Context, Module};
 pub fn module(context: &Context) -> Option<Module> {
     let mut module = context.new_module();
 
-    let props = &context.properties;
-    let elapsed = props
-        .get("cmd_duration")
-        .unwrap_or(&"invalid_time".into())
-        .parse::<u64>()
-        .ok()?;
+    let elapsed = context.cmd_duration?;
 
     let config_min = 2;
 

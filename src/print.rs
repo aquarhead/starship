@@ -26,16 +26,14 @@ pub fn get_prompt(context: Context) -> String {
 
     let modules = vec![
         module!(directory),
-        module!(git_branch),
+        module!(vcs_branch),
         module!(git_state),
         module!(git_status),
         module!(git_track),
         module!(rust),
         module!(golang),
-        module!(python),
         module!(aws),
         module!(plaio),
-        module!(tailscale),
         module!(kube),
         module!(cmd_duration),
         module!(line_break),

@@ -12,6 +12,7 @@ pub fn module(context: &Context) -> Option<Module> {
 
     if Command::new("jj")
         .arg("root")
+        .arg("--ignore-working-copy")
         .output()
         .is_ok_and(|o| o.status.success())
     {

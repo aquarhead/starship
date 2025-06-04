@@ -49,7 +49,7 @@ impl Context {
         Context {
             current_dir,
             cmd_duration: pargs
-                .opt_value_from_fn("--cmd_duration", |x| x.parse())
+                .opt_value_from_fn("--cmd-duration", |x| x.parse())
                 .ok()
                 .flatten(),
             jobs: pargs

@@ -57,7 +57,7 @@ impl Context {
                 .ok()
                 .flatten()
                 .unwrap_or(0),
-            status_code: pargs.opt_value_from_str("--status_code").ok().flatten(),
+            status_code: pargs.opt_value_from_str("--status").ok().flatten(),
             dir_files: OnceCell::new(),
             repo: OnceCell::new(),
         }

@@ -26,7 +26,7 @@ impl Segment {
     }
 
     // Returns the ANSIString of the segment value, not including its prefix and suffix
-    pub fn ansi_string(&self, style: &Style) -> ANSIString {
+    pub fn ansi_string(&self, style: &Style) -> ANSIString<'_> {
         style.paint(&self.value)
     }
 }

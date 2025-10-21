@@ -1,7 +1,7 @@
 [package]
 name = "starship"
 version = "0.25.2+aqd"
-edition = "2021"
+edition = "2024"
 authors = ["Matan Kushner <hello@matchai.me>"]
 readme = "README.md"
 license = "ISC"

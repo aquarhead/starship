@@ -64,7 +64,7 @@ impl<'a> Module {
 
     /// Returns a vector of colored ANSIString elements to be later used with
     /// `ANSIStrings()` to optimize ANSI codes
-    pub fn ansi_strings(&self) -> Vec<ANSIString> {
+    pub fn ansi_strings(&self) -> Vec<ANSIString<'_>> {
         let ansi_strings = self
             .segments
             .iter()
@@ -166,7 +166,7 @@ impl Affix {
     }
 
     /// Generates the colored ANSIString output.
-    pub fn ansi_string(&self) -> ANSIString {
+    pub fn ansi_string(&self) -> ANSIString<'_> {
         self.style.paint(&self.value)
     }
 }

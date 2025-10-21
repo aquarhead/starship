@@ -10,6 +10,7 @@ pub mod jobs;
 pub mod kube;
 pub mod line_break;
 pub mod plaio;
+pub mod plaio_db;
 pub mod prompt;
 pub mod rust;
 pub mod vcs_branch;

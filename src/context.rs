@@ -79,7 +79,7 @@ impl Context {
 
     // returns a new ScanDir struct with reference to current dir_files of context
     // see ScanDir for methods
-    pub fn try_begin_scan(&self) -> Option<ScanDir> {
+    pub fn try_begin_scan(&self) -> Option<ScanDir<'_>> {
         Some(ScanDir {
             dir_files: self.get_dir_files().ok()?,
             files: &[],

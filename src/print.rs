@@ -34,6 +34,7 @@ pub fn get_prompt(context: Context) -> String {
         module!(golang),
         module!(aws),
         module!(plaio),
+        module!(plaio_db),
         module!(kube),
         module!(cmd_duration),
         module!(line_break),

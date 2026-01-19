@@ -1,6 +1,5 @@
 mod context;
 mod init;
-mod module;
 mod modules;
 mod print;
 mod segment;

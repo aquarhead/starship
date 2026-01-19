@@ -23,22 +23,15 @@ RUST_LOG=debug cargo run -- prompt --status 0 --cmd-duration 1000  # Debug promp
 - `prompt` - Generates and prints the prompt
 
 **Prompt generation:** `src/print.rs` - Orchestrates modules in fixed order:
-1. directory, vcs_branch, git_state, git_status, git_track
+1. directory, jj, git_state, git_status, git_track
 2. rust, aws, plaio, plaio_db, kube
 3. cmd_duration, line_break, prompt, jobs
 
-**Context:** `src/context.rs` - Runtime context with lazy-loaded git info (via `OnceCell`), directory scanning with 30ms timeout, and path utilities.
-
-**Module pattern:** Each module in `src/modules/` implements:
-```rust
-pub fn module(context: &Context) -> Option<Module>
-```
-Returns `Some(Module)` to display, `None` to skip.
+**Context:** `src/context.rs` - Runtime context with VCS information, directory scanning with 30ms timeout, and path utilities.
 
 **Shell integration:** `src/init/starship.zsh` - ZSH hooks (`precmd`/`preexec`) that capture exit status, command duration, and invoke the Rust binary.
 
 ## Key Data Structures
 
-- **Module** (`src/module.rs`): Container with prefix, styled segments, and suffix
 - **Segment** (`src/segment.rs`): Single styled text element
 - **Context** (`src/context.rs`): Working directory, cmd_duration, jobs, status_code, cached git repo info

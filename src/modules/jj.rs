@@ -1,20 +1,15 @@
 use ansi_term::Color;
 
-use super::{Context, JJParent, Module, Repo};
+use super::{Context, JJParent, Repo, Segment};
 
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   if let Repo::JJRepo { empty, parent, .. } = &context.repo {
-    let mut module = Module::new();
     let color = if *empty { Color::Yellow } else { Color::Purple };
-    module.set_style(color);
-    match parent {
-      JJParent::Single { bookmark } => {
-        module.append_segment_str("◉");
-        module.append_segment_str(bookmark);
-      }
-      JJParent::Multi => module.append_segment_str("◆◇"),
-    }
-    Some(module)
+    let segment = match parent {
+      JJParent::Single { bookmark } => Segment::new().append("◉").append(bookmark).style(color),
+      JJParent::Multi => Segment::new().append("◉◇").style(color),
+    };
+    Some(vec![segment])
   } else {
     None
   }

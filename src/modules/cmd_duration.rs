@@ -1,27 +1,26 @@
 use ansi_term::Color;
 
-use super::{Context, Module};
+use super::{Context, Segment};
 
 /// Outputs the time it took the last command to execute
 ///
 /// Will only print if last command took more than a certain amount of time to
 /// execute. Default is two seconds, but can be set by config option `min_time`.
-pub fn module(context: &Context) -> Option<Module> {
-  let mut module = Module::new();
-
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let elapsed = context.cmd_duration?;
 
   let config_min = 2;
 
-  let module_color = match elapsed {
-    time if time < config_min => return None,
-    _ => Color::Yellow.dimmed(),
-  };
+  if elapsed < config_min {
+    return None;
+  }
 
-  module.set_style(module_color);
-  module.append_segment_str(&format!("tók {}", render_time(elapsed)));
-
-  Some(module)
+  Some(vec![
+    Segment::new()
+      .append("tók ")
+      .append(render_time(elapsed))
+      .style(Color::Yellow.dimmed()),
+  ])
 }
 
 // Render the time into a nice human-readable string

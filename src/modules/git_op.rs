@@ -2,30 +2,27 @@ use ansi_term::Color;
 use git2::RepositoryState;
 use std::path::{Path, PathBuf};
 
-use super::{Context, Module, Repo};
+use super::{Context, Repo, Segment};
 
 /// Creates a module with the state of the git repository at the current directory
 ///
 /// During a git operation it will show: REBASING, BISECTING, MERGING, etc.
 /// If the progress information is available (e.g. rebasing 3/10), it will show that too.
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let Repo::GitRepo { root, state, .. } = &context.repo else {
     return None;
   };
 
-  let mut module = Module::new();
   let state_description = get_state_description(*state, root)?;
 
-  module.set_style(Color::Blue.bold());
-  module.get_prefix().set_value("");
-  module.get_suffix().set_value(" ");
-  module.append_segment_str(state_description.label);
+  let mut segment = Segment::new().append("").append(state_description.label);
 
   if let Some(progress) = state_description.progress {
-    module.append_segment_str(&format!(" {}/{}", progress.current, progress.total));
+    segment = segment.append(format!(" {}/{}", progress.current, progress.total));
   }
+  segment = segment.append("");
 
-  Some(module)
+  Some(vec![segment.style(Color::Blue.bold())])
 }
 
 struct StateDescription {

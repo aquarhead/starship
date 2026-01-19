@@ -42,9 +42,11 @@ pub fn get_prompt(context: Context) -> String {
     module!(jobs),
   ];
 
-  // Remove segments set to `None`
-  for m in modules.into_iter().filter_map(|m| m) {
-    write!(buf, "{}", m).unwrap();
+  for segments in modules.into_iter().flatten() {
+    for segment in segments {
+      write!(buf, "{}", segment).unwrap();
+    }
+    write!(buf, " ").unwrap();
   }
 
   buf

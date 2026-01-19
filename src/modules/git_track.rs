@@ -1,7 +1,7 @@
 use ansi_term::Color;
 use git2::Repository;
 
-use super::{Context, Module, Repo};
+use super::{Context, Repo, Segment};
 
 /// Creates a module with the Git branch in the current directory
 ///
@@ -9,28 +9,25 @@ use super::{Context, Module, Repo};
 /// By default, the following symbols will be used to represent the repo's status:
 ///   - `⇡` – This branch is ahead of the branch being tracked
 ///   - `⇣` – This branch is behind of the branch being tracked
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let Repo::GitRepo { branch, root, .. } = &context.repo else {
     return None;
   };
   let branch_name = branch.as_ref()?;
   let repository = Repository::open(root).ok()?;
 
-  let module_style = Color::White;
-  let mut module = Module::new();
-  module.set_style(module_style);
-
   // Add the ahead/behind segment
   match get_ahead_behind(&repository, branch_name) {
     Ok((0, 0)) => None,
     Ok((ahead, behind)) => {
+      let mut segment = Segment::new();
       if ahead > 0 {
-        module.append_segment_str(&format!("⇡{}", ahead));
+        segment = segment.append(format!("⇡{}", ahead));
       }
       if behind > 0 {
-        module.append_segment_str(&format!("⇣{}", behind));
+        segment = segment.append(format!("⇣{}", behind));
       }
-      Some(module)
+      Some(vec![segment.style(Color::White)])
     }
     _ => None,
   }

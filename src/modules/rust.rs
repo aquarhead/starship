@@ -1,13 +1,13 @@
 use ansi_term::Color;
 
-use super::{Context, Module};
+use super::{Context, Segment};
 
 /// Creates a module with the current Rust version
 ///
 /// Will display the Rust version if any of the following criteria are met:
 ///     - Current directory contains a file with a `.rs` extension
 ///     - Current directory contains a `Cargo.toml` file
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let is_rs_project = context
     .try_begin_scan()?
     .set_files(&["Cargo.toml"])
@@ -15,11 +15,7 @@ pub fn module(context: &Context) -> Option<Module> {
     .is_match();
 
   if is_rs_project {
-    let mut module = Module::new();
-    module.set_style(Color::Green.bold());
-    module.append_segment_str("+Rust");
-
-    Some(module)
+    Some(vec![Segment::new().append("+Rust").style(Color::Green.bold())])
   } else {
     None
   }

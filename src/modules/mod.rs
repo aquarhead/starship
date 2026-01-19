@@ -1,4 +1,3 @@
-// While adding out new module add out module to src/module.rs ALL_MODULES const array also.
 pub mod aws;
 pub mod cmd_duration;
 pub mod directory;
@@ -16,4 +15,4 @@ pub mod prompt;
 pub mod rust;
 
 use crate::context::{Context, JJParent, Repo};
-use crate::module::Module;
+use crate::segment::Segment;

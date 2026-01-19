@@ -1,9 +1,9 @@
 use ansi_term::Color;
 use std::process::Command;
 
-use super::{Context, Module};
+use super::{Context, Segment};
 
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let has_env = context.try_begin_scan()?.set_files(&[".env"]).is_match();
 
   if !has_env {
@@ -18,11 +18,5 @@ pub fn module(context: &Context) -> Option<Module> {
     .ok()?
     .success();
 
-  (!using_local).then(|| {
-    let mut module = Module::new();
-
-    module.set_style(Color::Yellow.bold());
-    module.append_segment_str("!!NOT LOCAL!!");
-    module
-  })
+  (!using_local).then(|| vec![Segment::new().append("!!NOT LOCAL!!").style(Color::Yellow.bold())])
 }

@@ -1,7 +1,7 @@
 use ansi_term::Color;
 use git2::{Repository, Status};
 
-use super::{Context, Module, Repo};
+use super::{Context, Repo, Segment};
 
 /// Creates a module with the Git branch in the current directory
 ///
@@ -15,17 +15,13 @@ use super::{Context, Module, Repo};
 ///   - `+` — A new file has been added to the staging area
 ///   - `R` — A renamed file has been added to the staging area
 ///   - `D` — A file's deletion has been added to the staging area
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let Repo::GitRepo { root, .. } = &context.repo else {
     return None;
   };
   let repository = Repository::open(root).ok()?;
 
-  let mut module = Module::new();
-
-  module.get_prefix().set_value("").set_style(Color::Red);
-  module.get_suffix().set_value(" ").set_style(Color::Red);
-  module.set_style(Color::Red);
+  let mut segment = Segment::new().append("");
 
   let stash_object = repository.revparse_single("refs/stash");
   if stash_object.is_ok() {
@@ -39,33 +35,40 @@ pub fn module(context: &Context) -> Option<Module> {
 
   // Add the conflicted segment
   if let Ok(repo_status) = repo_status {
-    create_segment_with_count(&mut module, repo_status.conflicted, "!");
+    if repo_status.conflicted > 0 {
+      segment = segment.append("!");
+    }
   }
 
   // Add the stashed segment
   if stash_object.is_ok() {
-    module.append_segment_str("+stash+ ");
+    segment = segment.append("+stash+ ");
   }
 
   // Add all remaining status segments
   if let Ok(repo_status) = repo_status {
-    create_segment_with_count(&mut module, repo_status.deleted, "D");
-    create_segment_with_count(&mut module, repo_status.renamed, "R");
-    create_segment_with_count(&mut module, repo_status.modified, "M");
-    create_segment_with_count(&mut module, repo_status.staged, "+");
-    create_segment_with_count(&mut module, repo_status.untracked, "U");
+    if repo_status.deleted > 0 {
+      segment = segment.append("D");
+    }
+    if repo_status.renamed > 0 {
+      segment = segment.append("R");
+    }
+    if repo_status.modified > 0 {
+      segment = segment.append("M");
+    }
+    if repo_status.staged > 0 {
+      segment = segment.append("+");
+    }
+    if repo_status.untracked > 0 {
+      segment = segment.append("U");
+    }
   }
 
-  if module.is_empty() {
-    return None;
-  }
-
-  Some(module)
-}
-
-fn create_segment_with_count<'a>(module: &mut Module, count: usize, symbol: &str) {
-  if count > 0 {
-    module.append_segment_str(symbol);
+  // Only the prefix was added, no actual status
+  if segment.value.len() <= 1 {
+    None
+  } else {
+    Some(vec![segment.append("").style(Color::Red)])
   }
 }
 

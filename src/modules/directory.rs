@@ -2,7 +2,7 @@ use ansi_term::Color;
 use path_slash::PathExt;
 use std::path::Path;
 
-use super::{Context, Module, Repo};
+use super::{Context, Repo, Segment};
 
 /// Creates a module with the current directory
 ///
@@ -14,12 +14,8 @@ use super::{Context, Module, Repo};
 ///
 /// **Truncation**
 /// Paths will be limited in length to `3` path components by default.
-pub fn module(context: &Context) -> Option<Module> {
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
   const HOME_SYMBOL: &str = "~";
-
-  let mut module = Module::new();
-
-  module.set_style(Color::Cyan.bold());
 
   let current_dir = &context.current_dir;
 
@@ -40,9 +36,7 @@ pub fn module(context: &Context) -> Option<Module> {
   // Truncate the dir string to the maximum number of path components
   let truncated_dir_string = truncate(dir_string, 7);
 
-  module.append_segment_str(&truncated_dir_string);
-
-  Some(module)
+  Some(vec![Segment::new().append(&truncated_dir_string).style(Color::Cyan.bold())])
 }
 
 /// Contract the root component of a path

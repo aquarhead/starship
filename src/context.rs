@@ -1,5 +1,3 @@
-use crate::module::Module;
-
 use git2::{Repository, RepositoryState};
 use once_cell::sync::OnceCell;
 use pico_args::Arguments;
@@ -7,6 +5,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::string::String;
 use std::time::{Duration, Instant};
 
@@ -20,31 +19,44 @@ pub struct Context {
     pub cmd_duration: Option<u64>,
     pub jobs: u64,
     pub status_code: Option<String>,
+    pub repo: Repo,
 
     /// A vector containing the full paths of all the files in `current_dir`.
     dir_files: OnceCell<Vec<PathBuf>>,
+}
 
-    /// Private field to store Git information for modules who need it
-    repo: OnceCell<Repo>,
+pub enum Repo {
+    GitRepo {
+        branch: Option<String>,
+        root: PathBuf,
+        state: RepositoryState,
+    },
+    JJRepo {
+        root: PathBuf,
+    },
+    Empty,
 }
 
 impl Context {
     /// Identify the current working directory and create an instance of Context
     /// for it.
     pub fn new(mut pargs: Arguments) -> Context {
-        // Retrieve the "path" flag. If unavailable, use the current directory instead.
+        let current_dir = env::var("PWD").map(PathBuf::from).unwrap_or_else(|err| {
+            log::debug!("Unable to get path from $PWD: {}", err);
+            env::current_dir().expect("Unable to identify current directory.")
+        });
 
-        let path = pargs
-            .opt_value_from_str("--path")
-            .unwrap()
-            .unwrap_or_else(|| {
-                env::var("PWD").map(PathBuf::from).unwrap_or_else(|err| {
-                    log::debug!("Unable to get path from $PWD: {}", err);
-                    env::current_dir().expect("Unable to identify current directory.")
-                })
-            });
-
-        let current_dir = Context::expand_tilde(path);
+        let repo = Command::new("jj")
+            .arg("root")
+            .arg("--ignore-working-copy")
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .map(|o| {
+                let root = String::from_utf8_lossy(&o.stdout).trim().into();
+                Repo::JJRepo { root }
+            })
+            .unwrap_or_else(|| discover_git_repo(&current_dir));
 
         Context {
             current_dir,
@@ -59,22 +71,8 @@ impl Context {
                 .unwrap_or(0),
             status_code: pargs.opt_value_from_str("--status").ok().flatten(),
             dir_files: OnceCell::new(),
-            repo: OnceCell::new(),
+            repo,
         }
-    }
-
-    /// Convert a `~` in a path to the home directory
-    fn expand_tilde(dir: PathBuf) -> PathBuf {
-        if dir.starts_with("~") {
-            let without_home = dir.strip_prefix("~").unwrap();
-            return dirs::home_dir().unwrap().join(without_home);
-        }
-        dir
-    }
-
-    /// Create a new module
-    pub fn new_module(&self) -> Module {
-        Module::new()
     }
 
     // returns a new ScanDir struct with reference to current dir_files of context
@@ -86,27 +84,6 @@ impl Context {
             folders: &[],
             extensions: &[],
         })
-    }
-
-    /// Will lazily get repo root and branch when a module requests it.
-    pub fn get_repo(&self) -> Result<&Repo, std::io::Error> {
-        self.repo
-            .get_or_try_init(|| -> Result<Repo, std::io::Error> {
-                let repository = Repository::discover(&self.current_dir).ok();
-                let branch = repository
-                    .as_ref()
-                    .and_then(|repo| get_current_branch(repo));
-                let root = repository
-                    .as_ref()
-                    .and_then(|repo| repo.workdir().map(Path::to_path_buf));
-                let state = repository.as_ref().map(|repo| repo.state());
-
-                Ok(Repo {
-                    branch,
-                    root,
-                    state,
-                })
-            })
     }
 
     pub fn get_dir_files(&self) -> Result<&Vec<PathBuf>, std::io::Error> {
@@ -131,19 +108,6 @@ impl Context {
                 Ok(dir_files)
             })
     }
-}
-
-pub struct Repo {
-    /// If `current_dir` is a git repository or is contained within one,
-    /// this is the current branch name of that repo.
-    pub branch: Option<String>,
-
-    /// If `current_dir` is a git repository or is contained within one,
-    /// this is the path to the root of that repo.
-    pub root: Option<PathBuf>,
-
-    /// State
-    pub state: Option<RepositoryState>,
 }
 
 // A struct of Criteria which will be used to verify current PathBuf is
@@ -215,6 +179,25 @@ pub fn has_extension<'a>(dir_entry: &PathBuf, extensions: &'a [&'a str]) -> bool
         });
     }
     false
+}
+
+fn discover_git_repo(current_dir: &Path) -> Repo {
+    match Repository::discover(current_dir) {
+        Ok(repository) => {
+            let branch = get_current_branch(&repository);
+            let root = repository.workdir().map(Path::to_path_buf);
+            let state = repository.state();
+            match root {
+                Some(root) => Repo::GitRepo {
+                    branch,
+                    root,
+                    state,
+                },
+                None => Repo::Empty,
+            }
+        }
+        Err(_) => Repo::Empty,
+    }
 }
 
 fn get_current_branch(repository: &Repository) -> Option<String> {

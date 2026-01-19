@@ -2,7 +2,7 @@ use ansi_term::Color;
 use path_slash::PathExt;
 use std::path::Path;
 
-use super::{Context, Module};
+use super::{Context, Module, Repo};
 
 /// Creates a module with the current directory
 ///
@@ -17,7 +17,7 @@ use super::{Context, Module};
 pub fn module(context: &Context) -> Option<Module> {
     const HOME_SYMBOL: &str = "~";
 
-    let mut module = context.new_module();
+    let mut module = Module::new();
 
     module.set_style(Color::Cyan.bold());
 
@@ -26,14 +26,12 @@ pub fn module(context: &Context) -> Option<Module> {
     let home_dir = dirs::home_dir().unwrap();
     log::debug!("Current directory: {:?}", current_dir);
 
-    let repo = &context.get_repo().ok()?;
+    let dir_string = match &context.repo {
+        Repo::GitRepo { root, .. } | Repo::JJRepo { root } if root != &home_dir => {
+            let repo_folder_name = root.file_name().unwrap().to_str().unwrap();
 
-    let dir_string = match &repo.root {
-        Some(repo_root) if repo_root != &home_dir => {
-            let repo_folder_name = repo_root.file_name().unwrap().to_str().unwrap();
-
-            // Contract the path to the git repo root
-            contract_path(current_dir, repo_root, repo_folder_name)
+            // Contract the path to the repo root
+            contract_path(current_dir, root, repo_folder_name)
         }
         // Contract the path to the home directory
         _ => contract_path(current_dir, &home_dir, HOME_SYMBOL),

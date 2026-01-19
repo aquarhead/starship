@@ -1,7 +1,7 @@
 use ansi_term::Color;
 use git2::Repository;
 
-use super::{Context, Module};
+use super::{Context, Module, Repo};
 
 /// Creates a module with the Git branch in the current directory
 ///
@@ -10,13 +10,14 @@ use super::{Context, Module};
 ///   - `⇡` – This branch is ahead of the branch being tracked
 ///   - `⇣` – This branch is behind of the branch being tracked
 pub fn module(context: &Context) -> Option<Module> {
-    let repo = context.get_repo().ok()?;
-    let branch_name = repo.branch.as_ref()?;
-    let repo_root = repo.root.as_ref()?;
-    let repository = Repository::open(repo_root).ok()?;
+    let Repo::GitRepo { branch, root, .. } = &context.repo else {
+        return None;
+    };
+    let branch_name = branch.as_ref()?;
+    let repository = Repository::open(root).ok()?;
 
     let module_style = Color::White;
-    let mut module = context.new_module();
+    let mut module = Module::new();
     module.set_style(module_style);
 
     // Add the ahead/behind segment

@@ -31,7 +31,6 @@ pub fn get_prompt(context: Context) -> String {
         module!(git_status),
         module!(git_track),
         module!(rust),
-        module!(golang),
         module!(aws),
         module!(plaio),
         module!(plaio_db),

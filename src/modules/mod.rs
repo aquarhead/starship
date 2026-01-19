@@ -5,7 +5,6 @@ pub mod directory;
 pub mod git_state;
 pub mod git_status;
 pub mod git_track;
-pub mod golang;
 pub mod jobs;
 pub mod kube;
 pub mod line_break;
@@ -15,5 +14,5 @@ pub mod prompt;
 pub mod rust;
 pub mod vcs_branch;
 
-use crate::context::Context;
+use crate::context::{Context, Repo};
 use crate::module::Module;

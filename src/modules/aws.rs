@@ -19,7 +19,7 @@ pub fn module(context: &Context) -> Option<Module> {
             }
         });
 
-    let mut module = context.new_module();
+    let mut module = Module::new();
     module.set_style(Color::Yellow.normal());
     module.append_segment_str("~@");
     module.append_segment_str(&aws_profile);

@@ -1,7 +1,7 @@
 use ansi_term::Color;
 use git2::{Repository, Status};
 
-use super::{Context, Module};
+use super::{Context, Module, Repo};
 
 /// Creates a module with the Git branch in the current directory
 ///
@@ -16,11 +16,12 @@ use super::{Context, Module};
 ///   - `R` — A renamed file has been added to the staging area
 ///   - `D` — A file's deletion has been added to the staging area
 pub fn module(context: &Context) -> Option<Module> {
-    let repo = context.get_repo().ok()?;
-    let repo_root = repo.root.as_ref()?;
-    let repository = Repository::open(repo_root).ok()?;
+    let Repo::GitRepo { root, .. } = &context.repo else {
+        return None;
+    };
+    let repository = Repository::open(root).ok()?;
 
-    let mut module = context.new_module();
+    let mut module = Module::new();
 
     module.get_prefix().set_value("").set_style(Color::Red);
     module.get_suffix().set_value(" ").set_style(Color::Red);

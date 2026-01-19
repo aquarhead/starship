@@ -15,7 +15,7 @@ pub fn module(context: &Context) -> Option<Module> {
         .is_match();
 
     if is_rs_project {
-        let mut module = context.new_module();
+        let mut module = Module::new();
         module.set_style(Color::Green.bold());
         module.append_segment_str("+Rust");
 

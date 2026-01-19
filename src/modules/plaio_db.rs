@@ -19,7 +19,7 @@ pub fn module(context: &Context) -> Option<Module> {
         .success();
 
     (!using_local).then(|| {
-        let mut module = context.new_module();
+        let mut module = Module::new();
 
         module.set_style(Color::Yellow.bold());
         module.append_segment_str("!!NOT LOCAL!!");

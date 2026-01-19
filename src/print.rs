@@ -6,44 +6,47 @@ use crate::context::Context;
 use crate::modules;
 
 pub fn prompt(args: Arguments) {
-    let context = Context::new(args);
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-    write!(handle, "{}", get_prompt(context)).unwrap();
+  let context = Context::new(args);
+  let stdout = io::stdout();
+  let mut handle = stdout.lock();
+  write!(handle, "{}", get_prompt(context)).unwrap();
 }
 
 pub fn get_prompt(context: Context) -> String {
-    let mut buf = String::new();
+  let mut buf = String::new();
 
-    // Write a new line before the prompt
-    writeln!(buf).unwrap();
+  // Write a new line before the prompt
+  writeln!(buf).unwrap();
 
-    macro_rules! module {
-        ( $typ:ident ) => {
-            modules::$typ::module(&context)
-        };
-    }
+  macro_rules! module {
+    ( $typ:ident ) => {
+      modules::$typ::module(&context)
+    };
+  }
 
-    let modules = vec![
-        module!(directory),
-        module!(vcs_branch),
-        module!(git_state),
-        module!(git_status),
-        module!(git_track),
-        module!(rust),
-        module!(aws),
-        module!(plaio),
-        module!(plaio_db),
-        module!(kube),
-        module!(cmd_duration),
-        module!(line_break),
-        module!(prompt),
-        module!(jobs),
-    ]; // Remove segments set to `None`
+  let modules = vec![
+    module!(directory),
+    module!(jj),
+    module!(jj_parents),
+    module!(git_branch),
+    module!(git_status),
+    module!(git_op),
+    module!(git_track),
+    module!(rust),
+    module!(aws),
+    module!(plaio),
+    module!(plaio_db),
+    module!(kube),
+    module!(cmd_duration),
+    module!(line_break),
+    module!(prompt),
+    module!(jobs),
+  ];
 
-    for m in modules.into_iter().filter_map(|m| m) {
-        write!(buf, "{}", m).unwrap();
-    }
+  // Remove segments set to `None`
+  for m in modules.into_iter().filter_map(|m| m) {
+    write!(buf, "{}", m).unwrap();
+  }
 
-    buf
+  buf
 }

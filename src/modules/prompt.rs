@@ -11,15 +11,15 @@ use super::{Context, Module};
 /// - If the exit-code was anything else, the arrow will be formatted with
 /// `style_failure` (red by default)
 pub fn module(context: &Context) -> Option<Module> {
-    let mut module = Module::new();
+  let mut module = Module::new();
 
-    if context.status_code.as_ref().map_or(true, |sc| sc == "0") {
-        module.set_style(Color::Green.bold());
-        module.append_segment_str("<$>");
-    } else {
-        module.set_style(Color::Red.bold());
-        module.append_segment_str("</>");
-    };
+  if context.status_code.as_ref().map_or(true, |sc| sc == "0") {
+    module.set_style(Color::Green.bold());
+    module.append_segment_str("<$>");
+  } else {
+    module.set_style(Color::Red.bold());
+    module.append_segment_str("</>");
+  };
 
-    Some(module)
+  Some(module)
 }

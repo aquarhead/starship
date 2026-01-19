@@ -4,25 +4,25 @@ use std::process::Command;
 use super::{Context, Module};
 
 pub fn module(context: &Context) -> Option<Module> {
-    let has_env = context.try_begin_scan()?.set_files(&[".env"]).is_match();
+  let has_env = context.try_begin_scan()?.set_files(&[".env"]).is_match();
 
-    if !has_env {
-        return None;
-    }
+  if !has_env {
+    return None;
+  }
 
-    let using_local = Command::new("rg")
-        .arg("-q")
-        .arg("DB_HOST=localhost")
-        .arg(".env")
-        .status()
-        .ok()?
-        .success();
+  let using_local = Command::new("rg")
+    .arg("-q")
+    .arg("DB_HOST=localhost")
+    .arg(".env")
+    .status()
+    .ok()?
+    .success();
 
-    (!using_local).then(|| {
-        let mut module = Module::new();
+  (!using_local).then(|| {
+    let mut module = Module::new();
 
-        module.set_style(Color::Yellow.bold());
-        module.append_segment_str("!!NOT LOCAL!!");
-        module
-    })
+    module.set_style(Color::Yellow.bold());
+    module.append_segment_str("!!NOT LOCAL!!");
+    module
+  })
 }

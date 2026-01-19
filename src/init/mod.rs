@@ -16,34 +16,34 @@ has been developed as a compatibility measure with `eval $(starship init X)`
 */
 
 fn path_to_starship() -> io::Result<String> {
-    let current_exe = env::current_exe()?
-        .to_str()
-        .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "can't convert to str"))?
-        .to_string();
-    Ok(current_exe)
+  let current_exe = env::current_exe()?
+    .to_str()
+    .ok_or_else(|| io::Error::new(io::ErrorKind::Other, "can't convert to str"))?
+    .to_string();
+  Ok(current_exe)
 }
 
 /* This prints the setup stub, the short piece of code which sets up the main
 init code. The stub produces the main init script, then evaluates it with
 `source` and process substitution */
 pub fn init_stub() -> io::Result<()> {
-    let starship = path_to_starship()?.replace("\"", "\"'\"'\"");
-    print!("source <(\"{}\" init --print-full-init)", starship);
+  let starship = path_to_starship()?.replace("\"", "\"'\"'\"");
+  print!("source <(\"{}\" init --print-full-init)", starship);
 
-    Ok(())
+  Ok(())
 }
 
 /* This function (called when `--print-full-init` is passed to `starship init`)
 prints out the main initialization script */
 pub fn init_main() -> io::Result<()> {
-    let starship_path = path_to_starship()?.replace("\"", "\"'\"'\"");
+  let starship_path = path_to_starship()?.replace("\"", "\"'\"'\"");
 
-    // Set up quoting for starship path in case it has spaces.
-    let starship_path_string = format!("\"{}\"", starship_path);
-    let script = ZSH_INIT.replace("::STARSHIP::", &starship_path_string);
-    print!("{}", script);
+  // Set up quoting for starship path in case it has spaces.
+  let starship_path_string = format!("\"{}\"", starship_path);
+  let script = ZSH_INIT.replace("::STARSHIP::", &starship_path_string);
+  print!("{}", script);
 
-    Ok(())
+  Ok(())
 }
 
 const ZSH_INIT: &str = include_str!("starship.zsh");

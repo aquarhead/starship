@@ -34,14 +34,17 @@ pub enum Repo {
   JJRepo {
     root: PathBuf,
     empty: bool,
-    multi_parent: bool,
+    parent: JJParent,
   },
   Empty,
 }
 
+pub enum JJParent {
+  Single { bookmark: String },
+  Multi,
+}
+
 impl Context {
-  /// Identify the current working directory and create an instance of Context
-  /// for it.
   pub fn new(mut pargs: Arguments) -> Context {
     let current_dir = env::var("PWD").map(PathBuf::from).unwrap_or_else(|err| {
       log::debug!("Unable to get path from $PWD: {}", err);
@@ -61,17 +64,22 @@ impl Context {
           .ok()
           .map(|o| String::from_utf8_lossy(&o.stdout).trim() == "true")
           .unwrap_or(false);
-        let multi_parent = Command::new("jj")
-          .args(["log", "-Gr", "exactly(heads(::@- & bookmarks()), 1)"])
+        let parent = Command::new("jj")
+          .args([
+            "log",
+            "-Gr",
+            "exactly(heads(::@- & bookmarks()), 1)",
+            "-T",
+            "self.bookmarks()",
+          ])
           .output()
           .ok()
-          .map(|o| !o.status.success())
-          .unwrap_or(false);
-        Repo::JJRepo {
-          root,
-          empty,
-          multi_parent,
-        }
+          .filter(|o| o.status.success())
+          .map(|o| JJParent::Single {
+            bookmark: String::from_utf8_lossy(&o.stdout).trim().into(),
+          })
+          .unwrap_or(JJParent::Multi);
+        Repo::JJRepo { root, empty, parent }
       })
       .unwrap_or_else(|| discover_git_repo(&current_dir));
 

@@ -27,7 +27,6 @@ pub fn get_prompt(context: Context) -> String {
   let modules = vec![
     module!(directory),
     module!(jj),
-    module!(jj_parents),
     module!(git_branch),
     module!(git_status),
     module!(git_op),

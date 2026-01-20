@@ -3,7 +3,6 @@ mod init;
 mod modules;
 mod print;
 mod segment;
-mod utils;
 
 fn main() {
   env_logger::init();

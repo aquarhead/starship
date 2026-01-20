@@ -7,7 +7,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
     let color = if *empty { Color::Yellow } else { Color::Purple };
     let segment = match parent {
       JJParent::Single { bookmark } => Segment::new().append("◉").append(bookmark).style(color),
-      JJParent::Multi => Segment::new().append("◉◇").style(color),
+      JJParent::Multi => Segment::new().append("◆◇").style(color),
     };
     Some(vec![segment])
   } else {

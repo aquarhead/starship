@@ -1,4 +1,3 @@
-use git2::{Repository, RepositoryState};
 use once_cell::sync::OnceCell;
 use pico_args::Arguments;
 use std::env;
@@ -29,7 +28,6 @@ pub enum Repo {
   GitRepo {
     branch: Option<String>,
     root: PathBuf,
-    state: RepositoryState,
   },
   JJRepo {
     root: PathBuf,
@@ -51,37 +49,10 @@ impl Context {
       env::current_dir().expect("Unable to identify current directory.")
     });
 
-    let repo = Command::new("jj")
-      .args(["root", "--ignore-working-copy"])
-      .output()
-      .ok()
-      .filter(|o| o.status.success())
-      .map(|o| {
-        let root = String::from_utf8_lossy(&o.stdout).trim().into();
-        let empty = Command::new("jj")
-          .args(["log", "-Gr", "@", "-T", "self.empty()"])
-          .output()
-          .ok()
-          .map(|o| String::from_utf8_lossy(&o.stdout).trim() == "true")
-          .unwrap_or(false);
-        let parent = Command::new("jj")
-          .args([
-            "log",
-            "-Gr",
-            "exactly(heads(::@- & bookmarks()), 1)",
-            "-T",
-            "self.bookmarks()",
-          ])
-          .output()
-          .ok()
-          .filter(|o| o.status.success())
-          .map(|o| JJParent::Single {
-            bookmark: String::from_utf8_lossy(&o.stdout).trim().into(),
-          })
-          .unwrap_or(JJParent::Multi);
-        Repo::JJRepo { root, empty, parent }
-      })
-      .unwrap_or_else(|| discover_git_repo(&current_dir));
+    let repo = discover_jj_repo()
+      // lazy evaluation
+      .or_else(|| discover_git_repo(&current_dir))
+      .unwrap_or(Repo::Empty);
 
     Context {
       current_dir,
@@ -198,26 +169,65 @@ pub fn has_extension<'a>(dir_entry: &PathBuf, extensions: &'a [&'a str]) -> bool
   false
 }
 
-fn discover_git_repo(current_dir: &Path) -> Repo {
-  match Repository::discover(current_dir) {
-    Ok(repository) => {
-      let branch = get_current_branch(&repository);
-      let root = repository.workdir().map(Path::to_path_buf);
-      let state = repository.state();
-      match root {
-        Some(root) => Repo::GitRepo { branch, root, state },
-        None => Repo::Empty,
-      }
-    }
-    Err(_) => Repo::Empty,
-  }
+fn discover_jj_repo() -> Option<Repo> {
+  Command::new("jj")
+    .args(["root", "--ignore-working-copy"])
+    .output()
+    .ok()
+    .filter(|o| o.status.success())
+    .map(|o| {
+      let root = String::from_utf8_lossy(&o.stdout).trim().into();
+      let empty = Command::new("jj")
+        .args(["log", "-Gr", "@", "-T", "self.empty()"])
+        .output()
+        .ok()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim() == "true")
+        .unwrap_or(false);
+      let parent = Command::new("jj")
+        .args([
+          "log",
+          "-Gr",
+          "exactly(heads(::@- & (bookmarks() | tags())), 1)",
+          "-T",
+          "concat(self.bookmarks(), self.tags())",
+        ])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| JJParent::Single {
+          bookmark: String::from_utf8_lossy(&o.stdout).trim().into(),
+        })
+        .unwrap_or(JJParent::Multi);
+      Repo::JJRepo { root, empty, parent }
+    })
 }
 
-fn get_current_branch(repository: &Repository) -> Option<String> {
-  let head = repository.head().ok()?;
-  let shorthand = head.shorthand();
+fn discover_git_repo(current_dir: &Path) -> Option<Repo> {
+  let root = Command::new("git")
+    .args(["rev-parse", "--show-toplevel"])
+    .current_dir(current_dir)
+    .output()
+    .ok()
+    .filter(|o| o.status.success())
+    .and_then(|o| {
+      let path_str = String::from_utf8_lossy(&o.stdout).trim().to_string();
+      if path_str.is_empty() {
+        None
+      } else {
+        Some(PathBuf::from(path_str))
+      }
+    })?;
 
-  shorthand.map(std::string::ToString::to_string)
+  let branch = Command::new("git")
+    .args(["rev-parse", "--abbrev-ref", "HEAD"])
+    .current_dir(&root)
+    .output()
+    .ok()
+    .filter(|o| o.status.success())
+    .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+    .filter(|s| !s.is_empty());
+
+  Some(Repo::GitRepo { branch, root })
 }
 
 #[cfg(test)]

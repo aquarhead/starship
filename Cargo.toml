@@ -13,7 +13,6 @@ exclude = ["docs/**/*"]
 [dependencies]
 ansi_term = "0.12"
 dirs = "6"
-git2 = { version = "0.20", default-features = false }
 env_logger = "0.11"
 log = "0.4"
 path-slash = "0.2"

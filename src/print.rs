@@ -24,29 +24,36 @@ pub fn get_prompt(context: Context) -> String {
     };
   }
 
-  let modules = vec![
+  let info_line = vec![
     module!(directory),
     module!(jj),
-    module!(git_branch),
-    module!(git_status),
-    module!(git_op),
-    module!(git_track),
+    module!(git),
     module!(rust),
     module!(aws),
     module!(plaio),
     module!(plaio_db),
     module!(kube),
     module!(cmd_duration),
-    module!(line_break),
-    module!(prompt),
-    module!(jobs),
   ];
 
-  for segments in modules.into_iter().flatten() {
-    for segment in segments {
-      write!(buf, "{}", segment).unwrap();
+  for module in info_line {
+    if let Some(segments) = module {
+      for segment in segments {
+        write!(buf, "{}", segment).unwrap();
+      }
+      write!(buf, " ").unwrap();
     }
-    write!(buf, " ").unwrap();
+  }
+
+  writeln!(buf).unwrap();
+
+  for m in vec![module!(prompt), module!(jobs)] {
+    if let Some(segments) = m {
+      for segment in segments {
+        write!(buf, "{}", segment).unwrap();
+      }
+      write!(buf, " ").unwrap();
+    }
   }
 
   buf

@@ -24,19 +24,7 @@ pub fn get_prompt(context: Context) -> String {
     };
   }
 
-  let info_line = vec![
-    module!(directory),
-    module!(jj),
-    module!(git),
-    module!(rust),
-    module!(aws),
-    module!(plaio),
-    module!(plaio_db),
-    module!(kube),
-    module!(cmd_duration),
-  ];
-
-  for module in info_line {
+  for module in vec![module!(directory), module!(vcs), module!(env), module!(cmd_duration)] {
     if let Some(segments) = module {
       for segment in segments {
         write!(buf, "{}", segment).unwrap();
@@ -47,14 +35,10 @@ pub fn get_prompt(context: Context) -> String {
 
   writeln!(buf).unwrap();
 
-  for m in vec![module!(prompt), module!(jobs)] {
-    if let Some(segments) = m {
-      for segment in segments {
-        write!(buf, "{}", segment).unwrap();
-      }
-      write!(buf, " ").unwrap();
-    }
+  for segment in module!(prompt) {
+    write!(buf, "{}", segment).unwrap();
   }
+  write!(buf, " ").unwrap();
 
   buf
 }

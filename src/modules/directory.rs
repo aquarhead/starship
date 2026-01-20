@@ -36,7 +36,9 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
   // Truncate the dir string to the maximum number of path components
   let truncated_dir_string = truncate(dir_string, 7);
 
-  Some(vec![Segment::new().append(&truncated_dir_string).style(Color::Cyan.bold())])
+  Some(vec![
+    Segment::new().append(&truncated_dir_string).style(Color::Cyan.bold()),
+  ])
 }
 
 /// Contract the root component of a path

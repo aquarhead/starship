@@ -25,7 +25,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
 
     if has_env {
       let using_local = Command::new("rg")
-        .args(["-q", "DB_HOST=localhost", ".env"])
+        .args(["-q", "^DB_HOST=(localhost|127.0.0.1)$", ".env"])
         .status()
         .ok()
         .map(|s| s.success())

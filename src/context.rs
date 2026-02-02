@@ -184,18 +184,25 @@ fn discover_jj_repo() -> Option<Repo> {
         .map(|o| String::from_utf8_lossy(&o.stdout).trim() == "true")
         .unwrap_or(false);
       let parent = Command::new("jj")
-        .args([
-          "log",
-          "-Gr",
-          "exactly(heads(::@- & (bookmarks() | tags())), 1)",
-          "-T",
-          "truncate_end(6, concat(self.bookmarks(), self.tags()), \"...\")",
-        ])
+        .args(["log", "-Gr", "exactly(@-, 1)"])
         .output()
         .ok()
         .filter(|o| o.status.success())
-        .map(|o| JJParent::Single {
-          bookmark: String::from_utf8_lossy(&o.stdout).trim().into(),
+        .and_then(|_| {
+          Command::new("jj")
+            .args([
+              "log",
+              "-Gr",
+              "exactly(heads(::@- & (bookmarks() | tags())), 1)",
+              "-T",
+              "truncate_end(6, concat(self.bookmarks(), self.tags()), \"...\")",
+            ])
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .map(|o| JJParent::Single {
+              bookmark: String::from_utf8_lossy(&o.stdout).trim().into(),
+            })
         })
         .unwrap_or(JJParent::Multi);
       Repo::JJRepo { root, empty, parent }

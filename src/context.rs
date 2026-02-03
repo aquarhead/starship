@@ -195,7 +195,7 @@ fn discover_jj_repo() -> Option<Repo> {
               "-Gr",
               "exactly(heads(::@- & (bookmarks() | tags())), 1)",
               "-T",
-              "truncate_end(6, concat(self.bookmarks(), self.tags()), \"...\")",
+              "concat(self.bookmarks(), self.tags())",
             ])
             .output()
             .ok()

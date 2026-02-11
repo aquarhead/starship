@@ -17,7 +17,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
 
   Some(vec![
     Segment::new()
-      .append("tók ")
+      .append("◴")
       .append(render_time(elapsed))
       .style(Color::Yellow.dimmed()),
   ])

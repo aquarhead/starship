@@ -24,15 +24,24 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
     let has_env = scanner.set_files(&[".env"]).is_match();
 
     if has_env {
-      let using_local = Command::new("rg")
-        .args(["-q", "^DB_HOST=(localhost|127.0.0.1)$", ".env"])
+      let has_db_host = Command::new("rg")
+        .args(["-q", "^DB_HOST=", ".env"])
         .status()
         .ok()
         .map(|s| s.success())
         .unwrap_or(false);
 
-      if !using_local {
-        segments.push(Segment::new().append("!!NOT LOCAL!!").style(Color::Yellow.bold()));
+      if has_db_host {
+        let using_local = Command::new("rg")
+          .args(["-q", "^DB_HOST=(localhost|127.0.0.1)$", ".env"])
+          .status()
+          .ok()
+          .map(|s| s.success())
+          .unwrap_or(false);
+
+        if !using_local {
+          segments.push(Segment::new().append("!!NOT LOCAL!!").style(Color::Yellow.bold()));
+        }
       }
     }
   }

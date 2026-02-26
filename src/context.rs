@@ -38,7 +38,12 @@ pub enum Repo {
 }
 
 pub enum JJParent {
-  Single { bookmark: String },
+  Single {
+    bookmark: String,
+    local_ahead: u64,
+    ahead: u64,
+    behind: u64,
+  },
   Multi,
 }
 
@@ -200,8 +205,41 @@ fn discover_jj_repo() -> Option<Repo> {
             .output()
             .ok()
             .filter(|o| o.status.success())
-            .map(|o| JJParent::Single {
-              bookmark: String::from_utf8_lossy(&o.stdout).trim().into(),
+            .map(|o| {
+              let bookmark: String = String::from_utf8_lossy(&o.stdout).trim().into();
+              let (ahead, behind) = Command::new("jj")
+                .args([
+                  "log",
+                  "--no-graph",
+                  "-r",
+                  "exactly(heads(::@- & bookmarks()), 1)",
+                  "-T",
+                  r#"self.remote_bookmarks().filter(|b| b.tracked() && b.remote() == "origin").map(|b| b.tracking_ahead_count().exact() ++ " " ++ b.tracking_behind_count().exact()).join("")"#,
+                ])
+                .output()
+                .ok()
+                .filter(|o| o.status.success())
+                .and_then(|o| {
+                  let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
+                  let mut parts = s.split_whitespace();
+                  let ahead = parts.next()?.parse().ok()?;
+                  let behind = parts.next()?.parse().ok()?;
+                  Some((ahead, behind))
+                })
+                .unwrap_or((0, 0));
+              let local_ahead = Command::new("jj")
+                .args([
+                  "log",
+                  "-r",
+                  "heads(::@- & bookmarks())::@- ~ heads(::@- & bookmarks())",
+                  "--count",
+                ])
+                .output()
+                .ok()
+                .filter(|o| o.status.success())
+                .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse().ok())
+                .unwrap_or(0);
+              JJParent::Single { bookmark, local_ahead, ahead, behind }
             })
         })
         .unwrap_or(JJParent::Multi);

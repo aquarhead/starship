@@ -176,91 +176,109 @@ pub fn has_extension<'a>(dir_entry: &PathBuf, extensions: &'a [&'a str]) -> bool
 }
 
 fn discover_jj_repo() -> Option<Repo> {
-  Command::new("jj")
+  let root_output = Command::new("jj")
     .args(["root", "--ignore-working-copy"])
     .output()
     .ok()
-    .filter(|o| o.status.success())
-    .map(|o| {
-      let root = String::from_utf8_lossy(&o.stdout).trim().into();
-      let empty = Command::new("jj")
+    .filter(|o| o.status.success())?;
+  let root: PathBuf = String::from_utf8_lossy(&root_output.stdout).trim().into();
+
+  let (empty, parent, default_workspace_parent) = std::thread::scope(|s| {
+    let t_empty = s.spawn(|| {
+      Command::new("jj")
         .args(["log", "-Gr", "@", "-T", "self.empty()"])
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim() == "true")
-        .unwrap_or(false);
-      let parent = Command::new("jj")
-        .args(["log", "-Gr", "exactly(@-, 1)"])
+        .unwrap_or(false)
+    });
+
+    let t_bookmark = s.spawn(|| {
+      // Combined bookmark name + tracking info in one call
+      Command::new("jj")
+        .args([
+          "log",
+          "--no-graph",
+          "-r",
+          "exactly(heads(::@- & (bookmarks() | tags())), 1)",
+          "-T",
+          concat!(
+            r#"coalesce(self.bookmarks().map(|b| b.name()), self.tags()) ++ "\n" ++ "#,
+            r#"self.remote_bookmarks().filter(|b| b.tracked() && b.remote() == "origin")"#,
+            r#".map(|b| b.tracking_ahead_count().exact() ++ " " ++ b.tracking_behind_count().exact()).join("")"#,
+          ),
+        ])
         .output()
         .ok()
         .filter(|o| o.status.success())
-        .and_then(|_| {
-          Command::new("jj")
-            .args([
-              "log",
-              "-Gr",
-              "exactly(heads(::@- & (bookmarks() | tags())), 1)",
-              "-T",
-              "coalesce(self.bookmarks().map(|b| b.name()), self.tags())",
-            ])
-            .output()
-            .ok()
-            .filter(|o| o.status.success())
-            .map(|o| {
-              let bookmark: String = String::from_utf8_lossy(&o.stdout).trim().into();
-              let (ahead, behind) = Command::new("jj")
-                .args([
-                  "log",
-                  "--no-graph",
-                  "-r",
-                  "exactly(heads(::@- & bookmarks()), 1)",
-                  "-T",
-                  r#"self.remote_bookmarks().filter(|b| b.tracked() && b.remote() == "origin").map(|b| b.tracking_ahead_count().exact() ++ " " ++ b.tracking_behind_count().exact()).join("")"#,
-                ])
-                .output()
-                .ok()
-                .filter(|o| o.status.success())
-                .and_then(|o| {
-                  let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
-                  let mut parts = s.split_whitespace();
-                  let ahead = parts.next()?.parse().ok()?;
-                  let behind = parts.next()?.parse().ok()?;
-                  Some((ahead, behind))
-                })
-                .unwrap_or((0, 0));
-              let local_ahead = Command::new("jj")
-                .args([
-                  "log",
-                  "-r",
-                  "heads(::@- & bookmarks())::@- ~ heads(::@- & bookmarks())",
-                  "--count",
-                ])
-                .output()
-                .ok()
-                .filter(|o| o.status.success())
-                .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse().ok())
-                .unwrap_or(0);
-              JJParent::Single { bookmark, local_ahead, ahead, behind }
+        .map(|o| {
+          let output = String::from_utf8_lossy(&o.stdout).trim().to_string();
+          let mut lines = output.lines();
+          let bookmark = lines.next().unwrap_or("").to_string();
+          let (ahead, behind) = lines
+            .next()
+            .and_then(|line| {
+              let mut parts = line.split_whitespace();
+              let ahead = parts.next()?.parse().ok()?;
+              let behind = parts.next()?.parse().ok()?;
+              Some((ahead, behind))
             })
+            .unwrap_or((0, 0));
+          (bookmark, ahead, behind)
         })
-        .unwrap_or(JJParent::Multi);
-      let default_workspace_parent = Command::new("jj")
+    });
+
+    let t_local_ahead = s.spawn(|| {
+      Command::new("jj")
+        .args([
+          "log",
+          "-r",
+          "heads(::@- & bookmarks())::@- ~ heads(::@- & bookmarks())",
+          "--count",
+        ])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| String::from_utf8_lossy(&o.stdout).trim().parse().ok())
+        .unwrap_or(0)
+    });
+
+    let t_workspace = s.spawn(|| {
+      Command::new("jj")
         .args(["workspace", "root", "--name", "default", "--ignore-working-copy"])
         .output()
         .ok()
         .filter(|o| o.status.success())
         .and_then(|o| {
-          let default_ws_path = PathBuf::from(String::from_utf8_lossy(&o.stdout).trim().to_string());
+          let default_ws_path =
+            PathBuf::from(String::from_utf8_lossy(&o.stdout).trim().to_string());
           let dir_name = default_ws_path.file_name()?.to_str()?;
           if dir_name == "default" {
-            let parent_name = default_ws_path.parent()?.file_name()?.to_str()?.to_string();
+            let parent_name =
+              default_ws_path.parent()?.file_name()?.to_str()?.to_string();
             Some(parent_name)
           } else {
             None
           }
-        });
-      Repo::JJRepo { root, empty, parent, default_workspace_parent }
-    })
+        })
+    });
+
+    let empty = t_empty.join().unwrap();
+    let bookmark_info = t_bookmark.join().unwrap();
+    let local_ahead = t_local_ahead.join().unwrap();
+    let default_workspace_parent = t_workspace.join().unwrap();
+
+    let parent = match bookmark_info {
+      Some((bookmark, ahead, behind)) => {
+        JJParent::Single { bookmark, local_ahead, ahead, behind }
+      }
+      None => JJParent::Multi,
+    };
+
+    (empty, parent, default_workspace_parent)
+  });
+
+  Some(Repo::JJRepo { root, empty, parent, default_workspace_parent })
 }
 
 fn discover_git_repo(current_dir: &Path) -> Option<Repo> {

@@ -1,10 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-Starship is a personalized fork of an ancient version of the original starship prompt. It's a minimalist, zsh-only shell prompt written in Rust with all dynamic config features removed. Designed to work with Fira Code or MonoLisa fonts.
+A minimalist, zsh-only shell prompt written in Rust with zero configurations. Designed to work with Fira Code or MonoLisa fonts.
 
 ## Build Commands
 

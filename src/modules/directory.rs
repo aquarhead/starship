@@ -23,10 +23,13 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
   log::debug!("Current directory: {:?}", current_dir);
 
   let dir_string = match &context.repo {
+    Repo::JJRepo { root, default_workspace_parent: Some(project), .. } if root != &home_dir => {
+      let workspace_name = root.file_name().unwrap().to_str().unwrap();
+      let prefix = format!("{}@{}", project, workspace_name);
+      contract_path(current_dir, root, &prefix)
+    }
     Repo::JJRepo { root, .. } | Repo::GitRepo { root, .. } if root != &home_dir => {
       let repo_folder_name = root.file_name().unwrap().to_str().unwrap();
-
-      // Contract the path to the repo root
       contract_path(current_dir, root, repo_folder_name)
     }
     // Contract the path to the home directory
@@ -106,6 +109,24 @@ mod tests {
 
     let output = contract_path(full_path, repo_root, "rocket-controls");
     assert_eq!(output, "rocket-controls/src");
+  }
+
+  #[test]
+  fn contract_jj_workspace_directory() {
+    let full_path = Path::new("/work/planner/default/src");
+    let repo_root = Path::new("/work/planner/default");
+
+    let output = contract_path(full_path, repo_root, "planner@default");
+    assert_eq!(output, "planner@default/src");
+  }
+
+  #[test]
+  fn contract_jj_workspace_at_root() {
+    let full_path = Path::new("/work/planner/default");
+    let repo_root = Path::new("/work/planner/default");
+
+    let output = contract_path(full_path, repo_root, "planner@default");
+    assert_eq!(output, "planner@default");
   }
 
   #[test]

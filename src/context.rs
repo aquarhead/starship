@@ -33,6 +33,7 @@ pub enum Repo {
     root: PathBuf,
     empty: bool,
     parent: JJParent,
+    default_workspace_parent: Option<String>,
   },
   Empty,
 }
@@ -243,7 +244,22 @@ fn discover_jj_repo() -> Option<Repo> {
             })
         })
         .unwrap_or(JJParent::Multi);
-      Repo::JJRepo { root, empty, parent }
+      let default_workspace_parent = Command::new("jj")
+        .args(["workspace", "root", "--name", "default", "--ignore-working-copy"])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| {
+          let default_ws_path = PathBuf::from(String::from_utf8_lossy(&o.stdout).trim().to_string());
+          let dir_name = default_ws_path.file_name()?.to_str()?;
+          if dir_name == "default" {
+            let parent_name = default_ws_path.parent()?.file_name()?.to_str()?.to_string();
+            Some(parent_name)
+          } else {
+            None
+          }
+        });
+      Repo::JJRepo { root, empty, parent, default_workspace_parent }
     })
 }
 

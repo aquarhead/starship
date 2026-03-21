@@ -33,7 +33,7 @@ pub enum Repo {
     root: PathBuf,
     empty: bool,
     parent: JJParent,
-    default_workspace_parent: Option<String>,
+    default_workspace_root: Option<PathBuf>,
   },
   Empty,
 }
@@ -183,7 +183,7 @@ fn discover_jj_repo() -> Option<Repo> {
     .filter(|o| o.status.success())?;
   let root: PathBuf = String::from_utf8_lossy(&root_output.stdout).trim().into();
 
-  let (empty, parent, default_workspace_parent) = std::thread::scope(|s| {
+  let (empty, parent, default_workspace_root) = std::thread::scope(|s| {
     let t_empty = s.spawn(|| {
       Command::new("jj")
         .args(["log", "-Gr", "@", "-T", "self.empty()"])
@@ -249,36 +249,34 @@ fn discover_jj_repo() -> Option<Repo> {
         .output()
         .ok()
         .filter(|o| o.status.success())
-        .and_then(|o| {
-          let default_ws_path =
-            PathBuf::from(String::from_utf8_lossy(&o.stdout).trim().to_string());
-          let dir_name = default_ws_path.file_name()?.to_str()?;
-          if dir_name == "default" {
-            let parent_name =
-              default_ws_path.parent()?.file_name()?.to_str()?.to_string();
-            Some(parent_name)
-          } else {
-            None
-          }
-        })
+        .map(|o| PathBuf::from(String::from_utf8_lossy(&o.stdout).trim().to_string()))
+        .filter(|default_root| *default_root != root)
     });
 
     let empty = t_empty.join().unwrap();
     let bookmark_info = t_bookmark.join().unwrap();
     let local_ahead = t_local_ahead.join().unwrap();
-    let default_workspace_parent = t_workspace.join().unwrap();
+    let default_workspace_root = t_workspace.join().unwrap();
 
     let parent = match bookmark_info {
-      Some((bookmark, ahead, behind)) => {
-        JJParent::Single { bookmark, local_ahead, ahead, behind }
-      }
+      Some((bookmark, ahead, behind)) => JJParent::Single {
+        bookmark,
+        local_ahead,
+        ahead,
+        behind,
+      },
       None => JJParent::Multi,
     };
 
-    (empty, parent, default_workspace_parent)
+    (empty, parent, default_workspace_root)
   });
 
-  Some(Repo::JJRepo { root, empty, parent, default_workspace_parent })
+  Some(Repo::JJRepo {
+    root,
+    empty,
+    parent,
+    default_workspace_root,
+  })
 }
 
 fn discover_git_repo(current_dir: &Path) -> Option<Repo> {

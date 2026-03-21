@@ -23,13 +23,14 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
   log::debug!("Current directory: {:?}", current_dir);
 
   let dir_string = match &context.repo {
-    Repo::JJRepo { root, default_workspace_parent: Some(project), .. } if root != &home_dir => {
+    Repo::JJRepo {
+      root,
+      default_workspace_root: Some(default_root),
+      ..
+    } if root != &home_dir => {
+      let project = default_root.file_name().unwrap().to_str().unwrap();
       let workspace_name = root.file_name().unwrap().to_str().unwrap();
-      let prefix = if workspace_name == "default" {
-        format!("{}@", project)
-      } else {
-        format!("{}[ℏ]{}", project, workspace_name)
-      };
+      let prefix = format!("[ℏ]{}@{}", project, workspace_name);
       contract_path(current_dir, root, &prefix)
     }
     Repo::JJRepo { root, .. } | Repo::GitRepo { root, .. } if root != &home_dir => {
@@ -116,39 +117,21 @@ mod tests {
   }
 
   #[test]
-  fn contract_jj_default_workspace_directory() {
-    let full_path = Path::new("/project/example-a/default/src");
-    let repo_root = Path::new("/project/example-a/default");
-
-    let output = contract_path(full_path, repo_root, "example-a@");
-    assert_eq!(output, "example-a@/src");
-  }
-
-  #[test]
-  fn contract_jj_default_workspace_at_root() {
-    let full_path = Path::new("/project/example-a/default");
-    let repo_root = Path::new("/project/example-a/default");
-
-    let output = contract_path(full_path, repo_root, "example-a@");
-    assert_eq!(output, "example-a@");
-  }
-
-  #[test]
   fn contract_jj_named_workspace_directory() {
-    let full_path = Path::new("/project/example-a/feature/src");
-    let repo_root = Path::new("/project/example-a/feature");
+    let full_path = Path::new("/work/feature/src");
+    let repo_root = Path::new("/work/feature");
 
-    let output = contract_path(full_path, repo_root, "example-a[ℏ]feature");
-    assert_eq!(output, "example-a[ℏ]feature/src");
+    let output = contract_path(full_path, repo_root, "[ℏ]example-a@feature");
+    assert_eq!(output, "[ℏ]example-a@feature/src");
   }
 
   #[test]
   fn contract_jj_named_workspace_at_root() {
-    let full_path = Path::new("/project/example-a/feature");
-    let repo_root = Path::new("/project/example-a/feature");
+    let full_path = Path::new("/work/feature");
+    let repo_root = Path::new("/work/feature");
 
-    let output = contract_path(full_path, repo_root, "example-a[ℏ]feature");
-    assert_eq!(output, "example-a[ℏ]feature");
+    let output = contract_path(full_path, repo_root, "[ℏ]example-a@feature");
+    assert_eq!(output, "[ℏ]example-a@feature");
   }
 
   #[test]

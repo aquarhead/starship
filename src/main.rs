@@ -18,6 +18,10 @@ fn main() {
       }
     }
     "prompt" => print::prompt(pargs),
+    "dirname" => {
+      let context = context::Context::new(pargs);
+      print!("{}", modules::directory::dir_string(&context));
+    }
     _ => panic!("unrecognized subcommand"),
   }
 }

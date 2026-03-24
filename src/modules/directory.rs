@@ -14,7 +14,7 @@ use super::{Context, Repo, Segment};
 ///
 /// **Truncation**
 /// Paths will be limited in length to `3` path components by default.
-pub fn module(context: &Context) -> Option<Vec<Segment>> {
+pub fn dir_string(context: &Context) -> String {
   const HOME_SYMBOL: &str = "~";
 
   let current_dir = &context.current_dir;
@@ -42,7 +42,11 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
   };
 
   // Truncate the dir string to the maximum number of path components
-  let truncated_dir_string = truncate(dir_string, 7);
+  truncate(dir_string, 7)
+}
+
+pub fn module(context: &Context) -> Option<Vec<Segment>> {
+  let truncated_dir_string = dir_string(context);
 
   Some(vec![
     Segment::new().append(&truncated_dir_string).style(Color::Cyan.bold()),

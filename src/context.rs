@@ -203,7 +203,7 @@ fn discover_jj_repo() -> Option<Repo> {
           "exactly(heads(::@- & (bookmarks() | tags())), 1)",
           "-T",
           concat!(
-            r#"coalesce(self.bookmarks().map(|b| b.name()), self.tags()) ++ "\n" ++ "#,
+            r#"coalesce(self.local_bookmarks().map(|b| b.name()), self.tags()) ++ "\n" ++ "#,
             r#"self.remote_bookmarks().filter(|b| b.tracked() && b.remote() == "origin")"#,
             r#".map(|b| b.tracking_ahead_count().exact() ++ " " ++ b.tracking_behind_count().exact()).join("")"#,
           ),

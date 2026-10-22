@@ -29,6 +29,17 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
           }
           return Some(segs);
         }
+        JJParent::Pair { name, local_ahead } => {
+          let mut segs = vec![Segment::new().append("◈").append(name).style(color)];
+          if *local_ahead > 0 {
+            segs.push(
+              Segment::new()
+                .append(&format!(" +{}", local_ahead))
+                .style(Color::Purple),
+            );
+          }
+          return Some(segs);
+        }
         JJParent::Multi => return Some(vec![Segment::new().append("◆◇").style(color)]),
       }
     }

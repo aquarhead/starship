@@ -45,6 +45,10 @@ pub enum JJParent {
     ahead: u64,
     behind: u64,
   },
+  Pair {
+    name: String,
+    local_ahead: u64,
+  },
   Multi,
 }
 
@@ -243,6 +247,22 @@ fn discover_jj_repo() -> Option<Repo> {
         .unwrap_or(0)
     });
 
+    let t_pair = s.spawn(|| {
+      Command::new("jj")
+        .args([
+          "log",
+          "--no-graph",
+          "-r",
+          "heads(::@- & bookmarks())",
+          "-T",
+          r#"self.local_bookmarks().map(|b| b.name()).join(" ") ++ "\n""#,
+        ])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .and_then(|o| plan_impl_pair(&String::from_utf8_lossy(&o.stdout)))
+    });
+
     let t_workspace = s.spawn(|| {
       Command::new("jj")
         .args(["workspace", "root", "--name", "default", "--ignore-working-copy"])
@@ -256,6 +276,7 @@ fn discover_jj_repo() -> Option<Repo> {
     let empty = t_empty.join().unwrap();
     let bookmark_info = t_bookmark.join().unwrap();
     let local_ahead = t_local_ahead.join().unwrap();
+    let pair = t_pair.join().unwrap();
     let default_workspace_root = t_workspace.join().unwrap();
 
     let parent = match bookmark_info {
@@ -265,7 +286,10 @@ fn discover_jj_repo() -> Option<Repo> {
         ahead,
         behind,
       },
-      None => JJParent::Multi,
+      None => match pair {
+        Some(name) => JJParent::Pair { name, local_ahead },
+        None => JJParent::Multi,
+      },
     };
 
     (empty, parent, default_workspace_root)
@@ -277,6 +301,17 @@ fn discover_jj_repo() -> Option<Repo> {
     parent,
     default_workspace_root,
   })
+}
+
+fn plan_impl_pair(output: &str) -> Option<String> {
+  let mut lines = output.lines().map(str::trim).filter(|l| !l.is_empty());
+  let (a, b) = (lines.next()?, lines.next()?);
+  if lines.next().is_some() {
+    return None;
+  }
+  let (plan, imp) = if a.ends_with("/plan") { (a, b) } else { (b, a) };
+  let name = plan.strip_suffix("/plan")?;
+  (!name.is_empty() && imp.strip_suffix("/impl") == Some(name)).then(|| name.to_string())
 }
 
 fn discover_git_repo(current_dir: &Path) -> Option<Repo> {
@@ -375,5 +410,15 @@ mod tests {
     };
 
     assert_eq!(passing_criteria.is_match(), true);
+  }
+
+  #[test]
+  fn test_plan_impl_pair() {
+    assert_eq!(plan_impl_pair("foo/plan\nfoo/impl\n"), Some("foo".to_string()));
+    assert_eq!(plan_impl_pair("foo/impl\nfoo/plan\n"), Some("foo".to_string()));
+    assert_eq!(plan_impl_pair("foo/plan\nbar/impl\n"), None);
+    assert_eq!(plan_impl_pair("foo/plan\nfoo/impl\nbaz\n"), None);
+    assert_eq!(plan_impl_pair("foo/plan\n"), None);
+    assert_eq!(plan_impl_pair("foo/plan bar\nfoo/impl\n"), None);
   }
 }

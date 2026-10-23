@@ -190,11 +190,17 @@ fn discover_jj_repo() -> Option<Repo> {
   let (empty, parent, default_workspace_root) = std::thread::scope(|s| {
     let t_empty = s.spawn(|| {
       Command::new("jj")
-        .args(["log", "-Gr", "@", "-T", "self.empty()"])
+        .args(["log", "-Gr", "@", "-T", r#"self.empty() ++ " " ++ self.parents().len()"#])
         .output()
         .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim() == "true")
-        .unwrap_or(false)
+        .map(|o| {
+          let output = String::from_utf8_lossy(&o.stdout);
+          let mut parts = output.split_whitespace();
+          let empty = parts.next() == Some("true");
+          let parents: u64 = parts.next().and_then(|n| n.parse().ok()).unwrap_or(1);
+          (empty, parents)
+        })
+        .unwrap_or((false, 1))
     });
 
     let t_bookmark = s.spawn(|| {
@@ -273,13 +279,13 @@ fn discover_jj_repo() -> Option<Repo> {
         .filter(|default_root| *default_root != root)
     });
 
-    let empty = t_empty.join().unwrap();
+    let (empty, parent_count) = t_empty.join().unwrap();
     let bookmark_info = t_bookmark.join().unwrap();
     let local_ahead = t_local_ahead.join().unwrap();
     let pair = t_pair.join().unwrap();
     let default_workspace_root = t_workspace.join().unwrap();
 
-    let parent = match bookmark_info {
+    let parent = match bookmark_info.filter(|_| parent_count == 1) {
       Some((bookmark, ahead, behind)) => JJParent::Single {
         bookmark,
         local_ahead,

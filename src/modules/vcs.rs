@@ -30,7 +30,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
           return Some(segs);
         }
         JJParent::Pair { name, local_ahead } => {
-          let mut segs = vec![Segment::new().append("◈").append(name).style(color)];
+          let mut segs = vec![Segment::new().append("◈").append(name).append("◇").style(color)];
           if *local_ahead > 0 {
             segs.push(
               Segment::new()

@@ -1,4 +1,4 @@
-use ansi_term::Color;
+use owo_colors::Style;
 use std::env;
 use std::process::Command;
 
@@ -10,13 +10,18 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
   // Rust
   if let Some(scanner) = context.try_begin_scan() {
     if scanner.set_files(&["Cargo.toml"]).set_extensions(&["rs"]).is_match() {
-      segments.push(Segment::new().append("+Rust").style(Color::Green.bold()));
+      segments.push(Segment::new().append("+Rust").style(Style::new().green().bold()));
     }
   }
 
   // plaio
   if let Ok(env_var) = env::var("PLAIO_ENV") {
-    segments.push(Segment::new().append("🅿️ ").append(&env_var).style(Color::White));
+    segments.push(
+      Segment::new()
+        .append("🅿️ ")
+        .append(&env_var)
+        .style(Style::new().white()),
+    );
   }
 
   // plaio_db
@@ -40,7 +45,11 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
           .unwrap_or(false);
 
         if !using_local {
-          segments.push(Segment::new().append("!!NOT LOCAL!!").style(Color::Yellow.bold()));
+          segments.push(
+            Segment::new()
+              .append("!!NOT LOCAL!!")
+              .style(Style::new().yellow().bold()),
+          );
         }
       }
     }
@@ -64,7 +73,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
         .append("~@")
         .append(&aws_profile)
         .append(&aws_region)
-        .style(Color::Yellow),
+        .style(Style::new().yellow()),
     );
   }
 
@@ -77,7 +86,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
         .append("|->")
         .append(&cluster)
         .append(&namespace)
-        .style(Color::Purple),
+        .style(Style::new().magenta()),
     );
   }
 

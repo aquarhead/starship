@@ -24,7 +24,13 @@ pub fn get_prompt(context: Context) -> String {
     };
   }
 
-  for module in vec![module!(directory), module!(vcs), module!(env), module!(cmd_duration)] {
+  for module in vec![
+    module!(ssh),
+    module!(directory),
+    module!(vcs),
+    module!(env),
+    module!(cmd_duration),
+  ] {
     if let Some(segments) = module {
       for segment in segments {
         write!(buf, "{}", segment).unwrap();

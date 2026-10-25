@@ -1,4 +1,4 @@
-use ansi_term::{ANSIString, Style};
+use owo_colors::Style;
 use std::fmt;
 
 /// A segment is a single styled text element in the prompt.
@@ -15,7 +15,7 @@ impl Segment {
   pub fn new() -> Self {
     Self {
       value: String::new(),
-      style: Style::default(),
+      style: Style::new(),
     }
   }
 
@@ -26,28 +26,27 @@ impl Segment {
   }
 
   /// Sets the segment's style.
-  pub fn style(mut self, style: impl Into<Style>) -> Self {
-    self.style = style.into();
+  pub fn style(mut self, style: Style) -> Self {
+    self.style = style;
     self
   }
 }
 
 impl fmt::Display for Segment {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f, "{}", ansi_string_modified(self.style.paint(&self.value)))
+    write!(f, "{}", ansi_string_modified(self.style.style(&self.value).to_string()))
   }
 }
 
 /// Many shells cannot deal with raw unprintable characters (like ANSI escape sequences) and
 /// miscompute the cursor position as a result, leading to strange visual bugs. Here, we wrap these
 /// characters in shell-specific escape codes to indicate to the shell that they are zero-length.
-fn ansi_string_modified(ansi: ANSIString) -> String {
+fn ansi_string_modified(ansi: String) -> String {
   const ESCAPE_BEGIN: char = '\u{1b}';
   const MAYBE_ESCAPE_END: char = 'm';
 
   let mut escaped = false;
   ansi
-    .to_string()
     .chars()
     .map(|x| match x {
       ESCAPE_BEGIN => {

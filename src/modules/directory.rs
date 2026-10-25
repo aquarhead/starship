@@ -1,4 +1,4 @@
-use ansi_term::Color;
+use owo_colors::Style;
 use path_slash::PathExt;
 use std::path::Path;
 
@@ -49,7 +49,9 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
   let truncated_dir_string = dir_string(context);
 
   Some(vec![
-    Segment::new().append(&truncated_dir_string).style(Color::Cyan.bold()),
+    Segment::new()
+      .append(&truncated_dir_string)
+      .style(Style::new().cyan().bold()),
   ])
 }
 

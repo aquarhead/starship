@@ -1,4 +1,4 @@
-use ansi_term::Color;
+use owo_colors::Style;
 
 use super::{Context, Segment};
 
@@ -19,7 +19,7 @@ pub fn module(context: &Context) -> Option<Vec<Segment>> {
     Segment::new()
       .append("◴")
       .append(render_time(elapsed))
-      .style(Color::Yellow.dimmed()),
+      .style(Style::new().yellow().dimmed()),
   ])
 }
 
